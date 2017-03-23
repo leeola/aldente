@@ -1,6 +1,11 @@
 package aldente
 
-import "github.com/leeola/errors"
+import (
+	"os"
+
+	"github.com/BurntSushi/toml"
+	"github.com/leeola/errors"
+)
 
 // TODO(leeola): Pretty much all of the commands in the interface spec should contain
 // context and/or channel(s) to cancel long running operations. They're being omitted
@@ -51,17 +56,27 @@ type Provision struct {
 
 type Config struct {
 	ConfigPaths []string
+	Db          Database
 }
 
 type Aldente struct {
-	config    Config
-	providers map[string]Provider
+	config         Config
+	db             Database
+	providers      map[string]Provider
+	machineConfigs []Machine
 }
 
 func New(c Config) (*Aldente, error) {
+	machines, err := loadMachines(c.ConfigPaths)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Aldente{
-		config:    c,
-		providers: map[string]Provider{},
+		config:         c,
+		db:             c.Db,
+		providers:      map[string]Provider{},
+		machineConfigs: machines,
 	}, nil
 }
 
@@ -80,5 +95,37 @@ func (a *Aldente) AddProvider(name string, p Provider) error {
 
 // New creates a new machine from the given Provider.
 func (a *Aldente) New(groupName string) error {
+	groupMachines := make([]Machine, len(a.machineConfigs))
+	for i, m := range a.machineConfigs {
+		m.Group = groupName
+		groupMachines[i] = m
+
+		if err := a.db.Add(m); err != nil {
+			return err
+		}
+	}
+
 	return nil
+}
+
+// loadMachines loads the machines from the given configuration.
+func loadMachines(configPaths []string) ([]Machine, error) {
+	// TODO(leeola): load from multiple configs
+	configPath := configPaths[0]
+
+	f, err := os.Open(configPath)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to open config")
+	}
+	defer f.Close()
+
+	var conf struct {
+		Machines []Machine `toml:"machines"`
+	}
+
+	if _, err := toml.DecodeReader(f, &conf); err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal config")
+	}
+
+	return conf.Machines, nil
 }

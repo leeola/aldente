@@ -1,5 +1,4 @@
 
 # Aldente (experimental)
 
-Aldente is an experimental ops tool. It is unstable and may be changed/etc
-at any time.
+An experimental tool to abstract docker/xen/rackspace apis and manage deployment.
