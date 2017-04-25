@@ -1,18 +1,15 @@
-package dockermachine
+package manual
 
 import (
-	"os"
-
-	"github.com/BurntSushi/toml"
-	"github.com/leeola/aldente"
+	ald "github.com/leeola/aldente"
+	cu "github.com/leeola/aldente/util/configunmarshaller"
 	"github.com/leeola/errors"
 )
 
-const ProviderType = "dockermachine"
+const ProviderType = "manual"
 
 type Config struct {
 	Name string
-	Type string
 }
 
 type Provider struct {
@@ -33,22 +30,19 @@ func (p *Provider) Type() string {
 	return ProviderType
 }
 
-func (p *Provider) NewMachine(string) (aldente.Machine, error) {
+func (p *Provider) NewMachine(string) (ald.Machine, error) {
 	return nil, errors.New("not implemented")
 }
 
-func FromConfig(configPath string) ([]*Provider, error) {
-	f, err := os.Open(configPath)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to open config")
-	}
-	defer f.Close()
-
+func FromConfigUnmarshaller(cu cu.ConfigUnmarshaller) ([]*Provider, error) {
 	var conf struct {
-		Configs []Config `toml:"providers"`
+		Configs []struct {
+			Config
+			Type string
+		} `toml:"providers"`
 	}
 
-	if _, err := toml.DecodeReader(f, &conf); err != nil {
+	if err := cu(&conf); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal config")
 	}
 
@@ -59,7 +53,7 @@ func FromConfig(configPath string) ([]*Provider, error) {
 			continue
 		}
 
-		p, err := New(c)
+		p, err := New(c.Config)
 		if err != nil {
 			return nil, err
 		}

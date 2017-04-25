@@ -1,11 +1,15 @@
 package aldente
 
 import (
-	"os"
-
-	"github.com/BurntSushi/toml"
+	cu "github.com/leeola/aldente/util/configunmarshaller"
 	"github.com/leeola/errors"
 )
+
+type Providers map[string]Provider
+
+// func (p Providers) ProvideGroup([]MachineConfig) (MachineGroup, error) {
+// 	return nil, errors.New("not implemented")
+// }
 
 // TODO(leeola): Pretty much all of the commands in the interface spec should contain
 // context and/or channel(s) to cancel long running operations. They're being omitted
@@ -15,10 +19,16 @@ import (
 //
 // This may be on the cloud, local vmware, docker, etc.
 type Provider interface {
-	// Name returns the constant name for this Provider.
+	// Name returns the configurable Name for this provider.
+	//
+	// Eg, you could have three providers for the type AWS which create different
+	// machines; large, etc.
 	Name() string
 
-	// Type() returns the constant type for this Provider.
+	// Type returns the constant type for this Provider.
+	//
+	// If Name() returns the dynamic name such as large-aws, Type() returns the
+	// implementor key, such as `"aws"`.
 	Type() string
 
 	// NewMachine allocates a new machine for the give provider.
@@ -30,13 +40,17 @@ type Provider interface {
 }
 
 // Machine is an SSH-able vm or container created by a Provider.
-type Machine struct {
-	Name     string
-	Group    string
-	Provider string
-	Host     string
-	SSHPort  int
+type Machine interface {
+	Name() string
+	Provider() string
+	Host() string
+	SSHPort() int
 }
+
+// MachineGroup is a collection of machines, as described in the config.
+type MachineGroup map[string]Machine
+
+type MachineGroups map[string]MachineGroup
 
 // Resource defines a filesystem resource to be created and copied to a machine.
 //
@@ -51,7 +65,7 @@ type Resource interface {
 	Path() string
 }
 
-type Provision struct {
+type Provision interface {
 }
 
 type Config struct {
@@ -60,30 +74,23 @@ type Config struct {
 }
 
 type Aldente struct {
-	config         Config
-	db             Database
-	providers      map[string]Provider
-	machineConfigs []Machine
+	config Config
+	db     Database
+
+	// providers is a map of providers which serve to create new machines and
+	// implement Machine interfaces for already existing machines.
+	providers map[string]Provider
 }
 
 func New(c Config) (*Aldente, error) {
-	machines, err := loadMachines(c.ConfigPaths)
-	if err != nil {
-		return nil, err
-	}
-
 	return &Aldente{
-		config:         c,
-		db:             c.Db,
-		providers:      map[string]Provider{},
-		machineConfigs: machines,
+		config:    c,
+		db:        c.Db,
+		providers: map[string]Provider{},
 	}, nil
 }
 
-func (a *Aldente) Configs(name string, p Provider) error {
-	return nil
-}
-
+// AddProvider adds a Provider implementation for the given name key.
 func (a *Aldente) AddProvider(name string, p Provider) error {
 	if _, exists := a.providers[name]; exists {
 		return errors.Errorf("error: provider with name %q already added", name)
@@ -93,39 +100,77 @@ func (a *Aldente) AddProvider(name string, p Provider) error {
 	return nil
 }
 
-// New creates a new machine from the given Provider.
-func (a *Aldente) New(groupName string) error {
-	groupMachines := make([]Machine, len(a.machineConfigs))
-	for i, m := range a.machineConfigs {
-		m.Group = groupName
-		groupMachines[i] = m
+// loadMachineConfigs loads machine configs and checks for missing providers.
+func (a *Aldente) loadMachineConfigs(cu cu.ConfigUnmarshaller) ([]MachineConfig, error) {
+	var config struct {
+		Machines []MachineConfig
+	}
+	if err := cu(&config); err != nil {
+		return nil, err
+	}
+	ms := config.Machines
 
-		if err := a.db.Add(m); err != nil {
-			return err
+	for _, m := range ms {
+		if m.Name == "" {
+			return nil, errors.New("machine missing name value")
+		}
+
+		if m.Provider == "" {
+			return nil, errors.Errorf("machine missing provider value: %s", m.Name)
+		}
+
+		if _, ok := a.providers[m.Provider]; !ok {
+			return nil, errors.Errorf("machine's provider not implemented: %s", m.Provider)
+		}
+	}
+
+	return ms, nil
+}
+
+// MachineRecords lists machines created and recorded in the db.
+func (a *Aldente) MachineRecords() ([]MachineRecord, error) {
+	return a.db.List()
+}
+
+// NewGroup creates a new machine group based on the configuration.
+//
+// Note that the group is created, but not the actual machines. Eg, no
+// VMs/Containers/etc are created from this method until
+// CreateMachine(group,name) is called, only the machine records are created as
+// placeholders, waiting to be created.
+func (a *Aldente) NewGroup(groupName string) error {
+	cu := cu.New(a.config.ConfigPaths)
+
+	machineRecords, err := a.MachineRecords()
+	if err != nil {
+		return err
+	}
+
+	// confirm the new group name is unique
+	for _, mr := range machineRecords {
+		if mr.Group == groupName {
+			return errors.Errorf("group name already in use: %s", groupName)
+		}
+	}
+
+	machineConfigs, err := a.loadMachineConfigs(cu)
+	if err != nil {
+		return err
+	}
+
+	// create a record for each machineConfig
+	for _, mc := range machineConfigs {
+		mr := MachineRecord{
+			Name:     mc.Name,
+			Group:    groupName,
+			Provider: mc.Provider,
+		}
+
+		if err := a.db.Add(mr); err != nil {
+			return errors.Wrapf(err,
+				"failed to store record for machine config: %s", mc.Name)
 		}
 	}
 
 	return nil
-}
-
-// loadMachines loads the machines from the given configuration.
-func loadMachines(configPaths []string) ([]Machine, error) {
-	// TODO(leeola): load from multiple configs
-	configPath := configPaths[0]
-
-	f, err := os.Open(configPath)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to open config")
-	}
-	defer f.Close()
-
-	var conf struct {
-		Machines []Machine `toml:"machines"`
-	}
-
-	if _, err := toml.DecodeReader(f, &conf); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal config")
-	}
-
-	return conf.Machines, nil
 }

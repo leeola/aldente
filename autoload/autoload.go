@@ -1,20 +1,25 @@
 package autoload
 
 import (
-	"github.com/leeola/aldente"
+	"errors"
+
+	ald "github.com/leeola/aldente"
+	cu "github.com/leeola/aldente/util/configunmarshaller"
 )
 
 var (
 	loadedConfigPaths []string
-	loadedAldente     *aldente.Aldente
+	loadedAldente     *ald.Aldente
 	loaders           []loader
 )
 
-type loader func([]string, *aldente.Aldente) error
+type loader func(cu.ConfigUnmarshaller, *ald.Aldente) error
 
 func RegisterLoader(l loader) error {
 	if loadedAldente != nil {
-		if err := l(loadedConfigPaths, loadedAldente); err != nil {
+		cu := cu.New(loadedConfigPaths)
+
+		if err := l(cu, loadedAldente); err != nil {
 			return err
 		}
 	}
@@ -24,9 +29,15 @@ func RegisterLoader(l loader) error {
 	return nil
 }
 
-func LoadAldente(configPaths []string, a *aldente.Aldente) error {
+func LoadAldente(configPaths []string, a *ald.Aldente) error {
+	if loadedAldente != nil {
+		return errors.New("autoload already loaded Aldente")
+	}
+
+	cu := cu.New(configPaths)
+
 	for _, l := range loaders {
-		if err := l(configPaths, a); err != nil {
+		if err := l(cu, a); err != nil {
 			return err
 		}
 	}

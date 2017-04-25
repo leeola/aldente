@@ -11,7 +11,7 @@ import (
 
 // data is the core data structure written to json on the fs.
 type data struct {
-	GroupMachines map[string][]ald.Machine
+	Machines []ald.MachineRecord
 }
 
 type MarshalDb struct {
@@ -32,14 +32,8 @@ func (db *MarshalDb) load() (data, error) {
 	defer f.Close()
 
 	var d data
-
 	err = json.NewDecoder(f).Decode(&d)
-	if err == io.EOF {
-		return data{
-			GroupMachines: map[string][]ald.Machine{},
-		}, nil
-	}
-	if err != nil {
+	if err != nil && err != io.EOF {
 		return data{}, errors.Wrap(err, "failed to decode db")
 	}
 
@@ -60,13 +54,22 @@ func (db *MarshalDb) save(d data) error {
 	return nil
 }
 
-func (db *MarshalDb) Add(m ald.Machine) error {
+func (db *MarshalDb) Add(m ald.MachineRecord) error {
 	d, err := db.load()
 	if err != nil {
 		return err
 	}
 
-	d.GroupMachines[m.Group] = append(d.GroupMachines[m.Group], m)
+	d.Machines = append(d.Machines, m)
 
 	return db.save(d)
+}
+
+func (db *MarshalDb) List() ([]ald.MachineRecord, error) {
+	d, err := db.load()
+	if err != nil {
+		return nil, err
+	}
+
+	return d.Machines, nil
 }

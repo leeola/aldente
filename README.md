@@ -1,4 +1,5 @@
 
 # Aldente (experimental)
 
-An experimental tool to abstract docker/xen/rackspace apis and manage deployment.
+An experimental tool to deployments and multi-machine management less
+mushy.
