@@ -36,6 +36,11 @@ func main() {
 			Flags:  []cli.Flag{},
 			Action: NewCmd,
 		},
+		{
+			Name:   "command, c",
+			Usage:  "run commands on the given group",
+			Action: CommandCmd,
+		},
 	}
 
 	if err := app.Run(os.Args); err != nil {
@@ -110,4 +115,8 @@ func ListCmd(ctx *cli.Context) error {
 	}
 
 	return nil
+}
+
+func CommandCmd(ctx *cli.Context) error {
+	return errors.New("not implemented")
 }

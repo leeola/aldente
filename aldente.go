@@ -1,6 +1,8 @@
 package aldente
 
 import (
+	"io"
+
 	cu "github.com/leeola/aldente/util/configunmarshaller"
 	"github.com/leeola/errors"
 )
@@ -39,12 +41,13 @@ type Provider interface {
 	NewMachine(string) (Machine, error)
 }
 
-// Machine is an SSH-able vm or container created by a Provider.
+// Machine that can run commands via the underlying transport.
 type Machine interface {
+	io.Closer
+
 	Name() string
 	Provider() string
-	Host() string
-	SSHPort() int
+	Run(io.Reader) (io.Reader, error)
 }
 
 // MachineGroup is a collection of machines, as described in the config.
