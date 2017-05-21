@@ -6,10 +6,11 @@ import (
 	"os"
 
 	"github.com/leeola/aldente"
-	autoload "github.com/leeola/aldente/autoload"
 	"github.com/leeola/aldente/databases/marshaldb"
-	_ "github.com/leeola/aldente/providers/manual/autoload"
 	"github.com/urfave/cli"
+
+	autoload "github.com/leeola/aldente/autoload"
+	_ "github.com/leeola/aldente/providers/manual/autoload"
 )
 
 func main() {
@@ -26,20 +27,31 @@ func main() {
 
 	app.Commands = []cli.Command{
 		{
+			Name:   "command, c",
+			Usage:  "run commands on the given group",
+			Action: NotImplementedCmd,
+		},
+		{
 			Name:   "ls",
 			Usage:  "list machines in the config",
-			Action: ListCmd,
+			Action: NotImplementedCmd,
 		},
 		{
 			Name:   "new",
 			Usage:  "create a new machine group",
 			Flags:  []cli.Flag{},
-			Action: NewCmd,
+			Action: NotImplementedCmd,
 		},
 		{
-			Name:   "command, c",
-			Usage:  "run commands on the given group",
-			Action: CommandCmd,
+			Name:   "providers",
+			Usage:  "list configured providers",
+			Action: NotImplementedCmd,
+			Flags: []cli.Flag{
+				cli.BoolFlag{
+					Name:  "registered",
+					Usage: "only show registered provider implementations",
+				},
+			},
 		},
 	}
 
@@ -117,6 +129,6 @@ func ListCmd(ctx *cli.Context) error {
 	return nil
 }
 
-func CommandCmd(ctx *cli.Context) error {
+func NotImplementedCmd(ctx *cli.Context) error {
 	return errors.New("not implemented")
 }
