@@ -1,0 +1,43 @@
+# provider creates new machines or provides implementations of existing machines.
+[[provider]]
+# The name of the provider allows machines to refer to this specific providers
+# configuration. For example, AWS-Large, or DigitalOceanMedium would be a name
+# referring to how this provider is configured.
+name = "local machine"
+# The type of the provider identifies the actual code that will be implementing
+# this provider. Run `aldente providers --registered` to see the specific
+# providers that are available currently.
+type = "local"
+
+# a machine is provided by the provider.
+[[machine]]
+name = "repo"
+provider = "local machine"
+
+# another machine, provided by the "local machine" provider.
+# Note that both of the machines are using the "local" provider, and
+# therefor are the same physical machine, they are just configured
+# differently. In this case, their working directory is different.
+[[machine]]
+name = "examples"
+provider = "local machine"
+workdir = "./_examples"
+
+# a command is instructions to run on the given machines.
+[[command]]
+name = "hello"
+machines = ["repo"]
+# the script is uploaded and run on whatever machines are specified
+# in the machine list.
+script = 'echo hello world'
+
+[[command]]
+name = "ls"
+machines = ["repo", "examples"]
+# scripts can be multiline.
+script = '''
+pwd
+ls -la
+'''
+
+# kak: filetype=ini
