@@ -6,8 +6,6 @@ import (
 	"os"
 
 	"github.com/urfave/cli"
-
-	_ "github.com/leeola/aldente/providers/manual/autoload"
 )
 
 func main() {
@@ -42,7 +40,7 @@ func main() {
 		{
 			Name:   "providers",
 			Usage:  "list configured providers",
-			Action: NotImplementedCmd,
+			Action: ProvidersCmd,
 		},
 	}
 

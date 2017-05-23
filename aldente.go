@@ -3,7 +3,6 @@ package aldente
 import (
 	"io"
 
-	cu "github.com/leeola/aldente/util/configunmarshaller"
 	"github.com/leeola/errors"
 )
 
@@ -111,8 +110,6 @@ func (a *Aldente) MachineRecords() ([]MachineRecord, error) {
 //
 // This allows for manually allocating a machine within a group.
 func (a *Aldente) NewGroup(groupName string) error {
-	cu := cu.New(a.config.ConfigPaths)
-
 	machineRecords, err := a.MachineRecords()
 	if err != nil {
 		return err

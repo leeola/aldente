@@ -65,6 +65,7 @@ func LoadAldente(configPaths []string) (*ald.Aldente, error) {
 }
 
 func LoadDatabase(cu cu.ConfigUnmarshaller) (ald.Database, error) {
+	return nil, nil
 }
 
 func LoadProviders(cu cu.ConfigUnmarshaller) (ald.Providers, error) {
