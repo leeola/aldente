@@ -72,8 +72,10 @@ type Provision interface {
 }
 
 type Config struct {
-	ConfigPaths []string
-	Db          Database
+	ConfigPaths    []string
+	Db             Database
+	MachineConfigs []MachineConfig
+	Providers      Providers
 }
 
 type Aldente struct {
@@ -82,25 +84,17 @@ type Aldente struct {
 
 	// providers is a map of providers which serve to create new machines and
 	// implement Machine interfaces for already existing machines.
-	providers map[string]Provider
+	providers Providers
+
+	machineConfigs []MachineConfig
 }
 
 func New(c Config) (*Aldente, error) {
 	return &Aldente{
 		config:    c,
 		db:        c.Db,
-		providers: map[string]Provider{},
+		providers: c.Providers,
 	}, nil
-}
-
-// AddProvider adds a Provider implementation for the given name key.
-func (a *Aldente) AddProvider(name string, p Provider) error {
-	if _, exists := a.providers[name]; exists {
-		return errors.Errorf("error: provider with name %q already added", name)
-	}
-
-	a.providers[name] = p
-	return nil
 }
 
 // loadMachineConfigs loads machine configs and checks for missing providers.

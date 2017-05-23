@@ -4,6 +4,7 @@
 # configuration. For example, AWS-Large, or DigitalOceanMedium would be a name
 # referring to how this provider is configured.
 name = "local machine"
+
 # The type of the provider identifies the actual code that will be implementing
 # this provider. Run `aldente providers --registered` to see the specific
 # providers that are available currently.

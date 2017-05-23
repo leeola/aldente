@@ -14,18 +14,22 @@ type data struct {
 	Machines []ald.MachineRecord
 }
 
-type MarshalDb struct {
-	path string
+type Config struct {
+	Path string `toml:"path"`
 }
 
-func New(path string) (*MarshalDb, error) {
+type MarshalDb struct {
+	config Config
+}
+
+func New(c Config) (*MarshalDb, error) {
 	return &MarshalDb{
-		path: path,
+		config: Config,
 	}, nil
 }
 
 func (db *MarshalDb) load() (data, error) {
-	f, err := os.OpenFile(db.path, os.O_CREATE|os.O_RDONLY, 0644)
+	f, err := os.OpenFile(db.config.Path, os.O_CREATE|os.O_RDONLY, 0644)
 	if err != nil {
 		return data{}, errors.Wrap(err, "failed to open db")
 	}
@@ -41,7 +45,7 @@ func (db *MarshalDb) load() (data, error) {
 }
 
 func (db *MarshalDb) save(d data) error {
-	f, err := os.OpenFile(db.path, os.O_CREATE|os.O_WRONLY, 0644)
+	f, err := os.OpenFile(db.config.Path, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return errors.Wrap(err, "failed to open db")
 	}
