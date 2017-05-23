@@ -2,43 +2,33 @@ package main
 
 import (
 	"errors"
+	"fmt"
+	"os"
+	"text/tabwriter"
 
-	"github.com/leeola/aldente"
 	"github.com/leeola/aldente/autoload"
-	"github.com/leeola/aldente/databases/marshaldb"
 	"github.com/urfave/cli"
 )
 
 func ProvidersCmd(ctx *cli.Context) error {
 	configPaths := ctx.GlobalStringSlice("config")
-	groupName := ctx.Args().First()
 
 	if len(configPaths) <= 0 {
 		return errors.New("error: at least one aldente config is required")
 	}
 
-	if groupName == "" {
-		return errors.New("error: group name is required")
-	}
-
-	// TODO(leeola): Make configurable.
-	db, err := marshaldb.New(".aldente.db")
+	a, err := autoload.LoadAldente(configPaths)
 	if err != nil {
 		return err
 	}
 
-	c := aldente.Config{
-		Db:          db,
-		ConfigPaths: configPaths,
-	}
-	a, err := aldente.New(c)
-	if err != nil {
-		return err
+	w := tabwriter.NewWriter(os.Stdout, 2, 0, 2, ' ', 0)
+	fmt.Fprintln(w, "\tNAME\tTYPE")
+
+	for i, p := range a.Provider() {
+		fmt.Fprintln(w, fmt.Sprintf("%d\t%s",
+			i+1, p.Name(), p.Type()))
 	}
 
-	if err := autoload.LoadAldente(configPaths, a); err != nil {
-		return err
-	}
-
-	return a.NewGroup(groupName)
+	return w.Flush()
 }

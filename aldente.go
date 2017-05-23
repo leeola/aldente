@@ -97,33 +97,6 @@ func New(c Config) (*Aldente, error) {
 	}, nil
 }
 
-// loadMachineConfigs loads machine configs and checks for missing providers.
-func (a *Aldente) loadMachineConfigs(cu cu.ConfigUnmarshaller) ([]MachineConfig, error) {
-	var config struct {
-		Machines []MachineConfig
-	}
-	if err := cu(&config); err != nil {
-		return nil, err
-	}
-	ms := config.Machines
-
-	for _, m := range ms {
-		if m.Name == "" {
-			return nil, errors.New("machine missing name value")
-		}
-
-		if m.Provider == "" {
-			return nil, errors.Errorf("machine missing provider value: %s", m.Name)
-		}
-
-		if _, ok := a.providers[m.Provider]; !ok {
-			return nil, errors.Errorf("machine's provider not implemented: %s", m.Provider)
-		}
-	}
-
-	return ms, nil
-}
-
 // MachineRecords lists machines created and recorded in the db.
 func (a *Aldente) MachineRecords() ([]MachineRecord, error) {
 	return a.db.List()
@@ -135,6 +108,8 @@ func (a *Aldente) MachineRecords() ([]MachineRecord, error) {
 // VMs/Containers/etc are created from this method until
 // CreateMachine(group,name) is called, only the machine records are created as
 // placeholders, waiting to be created.
+//
+// This allows for manually allocating a machine within a group.
 func (a *Aldente) NewGroup(groupName string) error {
 	cu := cu.New(a.config.ConfigPaths)
 
@@ -150,13 +125,8 @@ func (a *Aldente) NewGroup(groupName string) error {
 		}
 	}
 
-	machineConfigs, err := a.loadMachineConfigs(cu)
-	if err != nil {
-		return err
-	}
-
 	// create a record for each machineConfig
-	for _, mc := range machineConfigs {
+	for _, mc := range a.machineConfigs {
 		mr := MachineRecord{
 			Name:     mc.Name,
 			Group:    groupName,
@@ -170,4 +140,13 @@ func (a *Aldente) NewGroup(groupName string) error {
 	}
 
 	return nil
+}
+
+// Providers lists the configured providers.
+func (a *Aldente) Providers() []Provider {
+	var providers []Provider
+	for _, v := range a.providers {
+		providers = append(providers, v)
+	}
+	return providers
 }
