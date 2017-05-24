@@ -1,8 +1,6 @@
 package regloader
 
 import (
-	"errors"
-
 	"github.com/fatih/structs"
 	ald "github.com/leeola/aldente"
 	"github.com/leeola/aldente/autoload/registry"
@@ -12,17 +10,17 @@ import (
 )
 
 func init() {
-	registry.RegisterDatabase(Loader)
+	registry.MustRegisterDatabase(Loader)
 }
 
 func Loader(cu cu.ConfigUnmarshaller) (ald.Database, error) {
 	var c struct {
 		DontExpandHome bool             `toml:"dontExpandHome"`
-		Config         marshaldb.Config `toml:"marshalDatabase`
+		Config         marshaldb.Config `toml:"marshalDatabase"`
 	}
 
 	if err := cu.Unmarshal(&c); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal config")
+		return nil, err
 	}
 
 	// if the config isn't defined, do not load anything. This is allowed.

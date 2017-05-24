@@ -14,12 +14,19 @@ var (
 	databaseLoaders []DatabaseLoader
 )
 
+func init() {
+	// init the loaders so they're not nil. Nil loader slice represents a freed
+	// slice of loaders.
+	providerLoaders = []ProviderLoader{}
+	databaseLoaders = []DatabaseLoader{}
+}
+
 type ProviderLoader func(cu.ConfigUnmarshaller) (ald.Provider, error)
 type DatabaseLoader func(cu.ConfigUnmarshaller) (ald.Database, error)
 
-func RegisterProvider(l ProviderLoader) error {
+func MustRegisterProvider(l ProviderLoader) error {
 	if providerLoaders == nil {
-		return errors.New("providers already loaded")
+		panic("providers already loaded")
 	}
 
 	providerLoaders = append(providerLoaders, l)
@@ -27,9 +34,9 @@ func RegisterProvider(l ProviderLoader) error {
 	return nil
 }
 
-func RegisterDatabase(l DatabaseLoader) error {
+func MustRegisterDatabase(l DatabaseLoader) error {
 	if databaseLoaders == nil {
-		return errors.New("databases already loaded")
+		panic("databases already loaded")
 	}
 
 	databaseLoaders = append(databaseLoaders, l)
@@ -65,9 +72,27 @@ func LoadAldente(configPaths []string) (*ald.Aldente, error) {
 }
 
 func LoadDatabase(cu cu.ConfigUnmarshaller) (ald.Database, error) {
-	return nil, nil
+	var dbs []ald.Database
+	for _, l := range databaseLoaders {
+		db, err := l(cu)
+		if err != nil {
+			return nil, err
+		}
+
+		dbs = append(dbs, db)
+	}
+
+	if len(dbs) == 0 {
+		return nil, errors.New("no database defined in configs")
+	}
+
+	if len(dbs) > 1 {
+		return nil, errors.New("multiple databases defined in configs")
+	}
+
+	return dbs[0], nil
 }
 
-func LoadProviders(cu cu.ConfigUnmarshaller) (ald.Providers, error) {
+func LoadProviders(cu cu.ConfigUnmarshaller) ([]ald.Provider, error) {
 	return nil, nil
 }

@@ -41,4 +41,8 @@ pwd
 ls -la
 '''
 
+
+[marshalDatabase]
+Path = "_examples/.commands.db"
+
 # kak: filetype=ini

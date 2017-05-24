@@ -24,7 +24,7 @@ type MarshalDb struct {
 
 func New(c Config) (*MarshalDb, error) {
 	return &MarshalDb{
-		config: Config,
+		config: c,
 	}, nil
 }
 

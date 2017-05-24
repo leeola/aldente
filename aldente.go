@@ -6,12 +6,6 @@ import (
 	"github.com/leeola/errors"
 )
 
-type Providers map[string]Provider
-
-// func (p Providers) ProvideGroup([]MachineConfig) (MachineGroup, error) {
-// 	return nil, errors.New("not implemented")
-// }
-
 // TODO(leeola): Pretty much all of the commands in the interface spec should contain
 // context and/or channel(s) to cancel long running operations. They're being omitted
 // for simplicity during prototyping/PoC.
@@ -74,7 +68,7 @@ type Config struct {
 	ConfigPaths    []string
 	Db             Database
 	MachineConfigs []MachineConfig
-	Providers      Providers
+	Providers      []Provider
 }
 
 type Aldente struct {
@@ -83,16 +77,39 @@ type Aldente struct {
 
 	// providers is a map of providers which serve to create new machines and
 	// implement Machine interfaces for already existing machines.
-	providers Providers
+	providers map[string]Provider
 
 	machineConfigs []MachineConfig
 }
 
 func New(c Config) (*Aldente, error) {
+	if c.Db == nil {
+		return nil, errors.New("missing required config: Db")
+	}
+
+	if len(c.Providers) == 0 {
+		return nil, errors.New("missing required config: Providers")
+	}
+
+	if len(c.MachineConfigs) == 0 {
+		return nil, errors.New("missing required config: MachineConfigs")
+	}
+
+	providersMap := map[string]Provider{}
+	for _, p := range c.Providers {
+		n := p.Name()
+
+		if _, exists := providersMap[n]; exists {
+			return nil, errors.New("duplicate provider name configured")
+		}
+
+		providersMap[n] = p
+	}
+
 	return &Aldente{
 		config:    c,
 		db:        c.Db,
-		providers: c.Providers,
+		providers: providersMap,
 	}, nil
 }
 
