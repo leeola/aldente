@@ -42,6 +42,10 @@ ls -la
 '''
 
 
+
+# Finally, aldente requires some mechanism to persist information about machines,
+# eg, a database. This configuration can specify any of the supported databases,
+# to store basic data like groups created, ips of created machines, auth, etc.
 [marshalDatabase]
 Path = "_examples/.commands.db"
 

@@ -21,7 +21,7 @@ func init() {
 	databaseLoaders = []DatabaseLoader{}
 }
 
-type ProviderLoader func(cu.ConfigUnmarshaller) (ald.Provider, error)
+type ProviderLoader func(cu.ConfigUnmarshaller) ([]ald.Provider, error)
 type DatabaseLoader func(cu.ConfigUnmarshaller) (ald.Database, error)
 
 func MustRegisterProvider(l ProviderLoader) error {
@@ -94,5 +94,15 @@ func LoadDatabase(cu cu.ConfigUnmarshaller) (ald.Database, error) {
 }
 
 func LoadProviders(cu cu.ConfigUnmarshaller) ([]ald.Provider, error) {
-	return nil, nil
+	var ps []ald.Provider
+	for _, l := range providerLoaders {
+		p, err := l(cu)
+		if err != nil {
+			return nil, err
+		}
+
+		ps = append(ps, p...)
+	}
+
+	return ps, nil
 }
