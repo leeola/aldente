@@ -26,7 +26,7 @@ func ProvidersCmd(ctx *cli.Context) error {
 	fmt.Fprintln(w, "\tNAME\tTYPE")
 
 	for i, p := range a.Providers() {
-		fmt.Fprintln(w, fmt.Sprintf("%d\t%s", i+1, p.Name(), p.Type()))
+		fmt.Fprintln(w, fmt.Sprintf("%d\t%s\t%s", i+1, p.Name(), p.Type()))
 	}
 
 	return w.Flush()
