@@ -40,7 +40,7 @@ func main() {
 		{
 			Name:   "ls",
 			Usage:  "list machines in the config",
-			Action: NotImplementedCmd,
+			Action: ListCmd,
 		},
 		{
 			Name:   "providers",
