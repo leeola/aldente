@@ -43,11 +43,6 @@ type Machine interface {
 	Run(io.Reader) (io.Reader, error)
 }
 
-// MachineGroup is a collection of machines, as described in the config.
-type MachineGroup map[string]Machine
-
-type MachineGroups map[string]MachineGroup
-
 // Resource defines a filesystem resource to be created and copied to a machine.
 //
 // For example a Git resource will clone the given repo to a local temp directory.
