@@ -107,9 +107,10 @@ func New(c Config) (*Aldente, error) {
 	}
 
 	return &Aldente{
-		config:    c,
-		db:        c.Db,
-		providers: providersMap,
+		config:         c,
+		db:             c.Db,
+		providers:      providersMap,
+		machineConfigs: c.MachineConfigs,
 	}, nil
 }
 
