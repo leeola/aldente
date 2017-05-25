@@ -32,14 +32,14 @@ func main() {
 			Action: NotImplementedCmd,
 		},
 		{
-			Name:   "ls",
-			Usage:  "list machines in the config",
-			Action: NotImplementedCmd,
-		},
-		{
-			Name:   "new",
+			Name:   "create",
 			Usage:  "create a new machine group",
 			Flags:  []cli.Flag{},
+			Action: CreateCmd,
+		},
+		{
+			Name:   "ls",
+			Usage:  "list machines in the config",
 			Action: NotImplementedCmd,
 		},
 		{

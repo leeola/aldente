@@ -37,7 +37,15 @@ func (db *MarshalDb) load() (data, error) {
 
 	var d data
 	err = json.NewDecoder(f).Decode(&d)
-	if err != nil && err != io.EOF {
+
+	// If it's eof, create a new map and return that.
+	if err == io.EOF {
+		return data{
+			Groups: map[string]map[string]ald.MachineRecord{},
+		}, nil
+	}
+
+	if err != nil {
 		return data{}, errors.Wrap(err, "failed to decode db")
 	}
 
