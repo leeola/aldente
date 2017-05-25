@@ -11,7 +11,7 @@ import (
 
 // data is the core data structure written to json on the fs.
 type data struct {
-	Machines []ald.MachineRecord
+	Groups map[string]map[string]ald.MachineRecord
 }
 
 type Config struct {
@@ -58,22 +58,108 @@ func (db *MarshalDb) save(d data) error {
 	return nil
 }
 
-func (db *MarshalDb) Add(m ald.MachineRecord) error {
-	d, err := db.load()
-	if err != nil {
-		return err
-	}
-
-	d.Machines = append(d.Machines, m)
-
-	return db.save(d)
-}
-
-func (db *MarshalDb) List() ([]ald.MachineRecord, error) {
+func (db *MarshalDb) Groups() ([]string, error) {
 	d, err := db.load()
 	if err != nil {
 		return nil, err
 	}
 
-	return d.Machines, nil
+	// build a slice from the map
+	s := make([]string, len(d.Groups))
+	var i int
+	for n, _ := range d.Groups {
+		s[i] = n
+		i++
+	}
+
+	return s, nil
+}
+
+func (db *MarshalDb) GroupMachines(group string) ([]ald.MachineRecord, error) {
+	d, err := db.load()
+	if err != nil {
+		return nil, err
+	}
+
+	ms, ok := d.Groups[group]
+	if !ok {
+		return nil, errors.Errorf("group not found: %s", group)
+	}
+
+	// build a slice from the map
+	s := make([]ald.MachineRecord, len(ms))
+	var i int
+	for _, m := range ms {
+		s[i] = m
+		i++
+	}
+
+	return s, nil
+}
+
+func (db *MarshalDb) CreateGroup(group string, machines []ald.MachineConfig) error {
+	d, err := db.load()
+	if err != nil {
+		return err
+	}
+
+	if _, ok := d.Groups[group]; ok {
+		return errors.Errorf("group already exists: %s", group)
+	}
+
+	ms := map[string]ald.MachineRecord{}
+	for _, m := range machines {
+		if m.Name == "" {
+			return errors.New("missing required field: Name")
+		}
+		if m.Provider == "" {
+			return errors.New("missing required field: Provider")
+		}
+
+		// ensure no duplicate names
+		if _, ok := ms[m.Name]; ok {
+			return errors.Errorf("duplicate machine name: %s", m.Name)
+		}
+
+		ms[m.Name] = ald.MachineRecord{
+			Name:     m.Name,
+			Group:    group,
+			Provider: m.Provider,
+		}
+	}
+
+	d.Groups[group] = ms
+	return db.save(d)
+}
+
+func (db *MarshalDb) UpdateMachine(m ald.MachineRecord) error {
+	if m.Name == "" {
+		return errors.New("missing required field: Name")
+	}
+	if m.Group == "" {
+		return errors.New("missing required field: Group")
+	}
+	if m.Provider == "" {
+		return errors.New("missing required field: Provider")
+	}
+
+	d, err := db.load()
+	if err != nil {
+		return err
+	}
+
+	ms, ok := d.Groups[m.Group]
+	if !ok {
+		return errors.Errorf("group not found: %s", m.Group)
+	}
+
+	// only update a machine if it exists in the group.
+	// Ie, it may not have existed in the config when the group was created.
+	if _, ok := ms[m.Name]; !ok {
+		return errors.Errorf("group does not contain record for machine: %s", m.Name)
+	}
+
+	// update the record, and then save the struct
+	ms[m.Name] = m
+	return db.save(d)
 }

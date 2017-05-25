@@ -113,9 +113,14 @@ func New(c Config) (*Aldente, error) {
 	}, nil
 }
 
-// MachineRecords lists machines created and recorded in the db.
-func (a *Aldente) MachineRecords() ([]MachineRecord, error) {
-	return a.db.List()
+// Groups lists groups in the db.
+func (a *Aldente) Groups() ([]string, error) {
+	return a.db.Groups()
+}
+
+// GroupMachines lists machines for the given group.
+func (a *Aldente) GroupMachines(group string) ([]MachineRecord, error) {
+	return a.db.GroupMachines(group)
 }
 
 // NewGroup creates a new machine group based on the configuration.
@@ -126,34 +131,8 @@ func (a *Aldente) MachineRecords() ([]MachineRecord, error) {
 // placeholders, waiting to be created.
 //
 // This allows for manually allocating a machine within a group.
-func (a *Aldente) NewGroup(groupName string) error {
-	machineRecords, err := a.MachineRecords()
-	if err != nil {
-		return err
-	}
-
-	// confirm the new group name is unique
-	for _, mr := range machineRecords {
-		if mr.Group == groupName {
-			return errors.Errorf("group name already in use: %s", groupName)
-		}
-	}
-
-	// create a record for each machineConfig
-	for _, mc := range a.machineConfigs {
-		mr := MachineRecord{
-			Name:     mc.Name,
-			Group:    groupName,
-			Provider: mc.Provider,
-		}
-
-		if err := a.db.Add(mr); err != nil {
-			return errors.Wrapf(err,
-				"failed to store record for machine config: %s", mc.Name)
-		}
-	}
-
-	return nil
+func (a *Aldente) CreateGroup(group string) error {
+	return a.db.CreateGroup(group, a.machineConfigs)
 }
 
 // Providers lists the configured providers.

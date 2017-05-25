@@ -22,8 +22,13 @@ func main() {
 
 	app.Commands = []cli.Command{
 		{
-			Name:   "command, c",
-			Usage:  "run commands on the given group",
+			Name:   "command",
+			Usage:  "run commands defined in the configuration",
+			Action: NotImplementedCmd,
+		},
+		{
+			Name:   "commands",
+			Usage:  "list commands defined in the configuration",
 			Action: NotImplementedCmd,
 		},
 		{
