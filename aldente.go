@@ -1,63 +1,6 @@
 package aldente
 
-import (
-	"io"
-
-	"github.com/leeola/errors"
-)
-
-// TODO(leeola): Pretty much all of the commands in the interface spec should contain
-// context and/or channel(s) to cancel long running operations. They're being omitted
-// for simplicity during prototyping/PoC.
-
-// Provider is responsible for creating machines.
-//
-// This may be on the cloud, local vmware, docker, etc.
-type Provider interface {
-	// Name returns the configurable Name for this provider.
-	//
-	// Eg, you could have three providers for the type AWS which create different
-	// machines; large, etc.
-	Name() string
-
-	// Type returns the constant type for this Provider.
-	//
-	// If Name() returns the dynamic name such as large-aws, Type() returns the
-	// implementor key, such as `"aws"`.
-	Type() string
-
-	// NewMachine allocates a new machine for the give provider.
-	//
-	// Configuration is done via the toml config. Eg, if you want a large aws
-	// instance the aws provider will be configured to use a large instance, and
-	// the name of the provider will reflect that it creates a large aws instance.
-	NewMachine(string) (Machine, error)
-}
-
-// Machine that can run commands via the underlying transport.
-type Machine interface {
-	io.Closer
-
-	Name() string
-	Provider() string
-	Run(io.Reader) (io.Reader, error)
-}
-
-// Resource defines a filesystem resource to be created and copied to a machine.
-//
-// For example a Git resource will clone the given repo to a local temp directory.
-// The provision or build steps will then copy the resource into the machines
-// as defined by the config.
-type Resource interface {
-	// Path returns the path for the given resource.
-	//
-	// Note that resources should lazily load, so in the case of Git it will not
-	// be cloned until Path() is first called.
-	Path() string
-}
-
-type Provision interface {
-}
+import "github.com/leeola/errors"
 
 type Config struct {
 	ConfigPaths    []string
