@@ -3,8 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"os"
-	"text/tabwriter"
 
 	"github.com/leeola/aldente/autoload"
 	"github.com/urfave/cli"
@@ -27,21 +25,18 @@ func CreateCmd(ctx *cli.Context) error {
 		return err
 	}
 
-	machines, err := a.GroupMachines(group)
-	if err != nil {
-		return err
+	if !ctx.Bool("not-provision") {
+		// TODO(leeola): this interface is likely to change a lot,
+		// as provisioning is not yet *really* implemented, local just
+		// allocates a machine interface.
+		if _, err := a.Provision(group); err != nil {
+			return err
+		}
+
+		fmt.Println("\ngroup provisioned machines:")
+	} else {
+		fmt.Println("\ngroup created machines:")
 	}
 
-	fmt.Println("Group created with placeholder machines:")
-
-	w := tabwriter.NewWriter(os.Stdout, 2, 0, 2, ' ', 0)
-	fmt.Fprintln(w, "\tNAME\tPROVIDER")
-
-	for i, m := range machines {
-		fmt.Fprintln(w, fmt.Sprintf("%d\t%s\t%s", i+1, m.Name, m.Provider))
-	}
-
-	return w.Flush()
-
-	return nil
+	return listMachines([]string{group})
 }

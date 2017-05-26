@@ -34,8 +34,13 @@ func main() {
 		{
 			Name:   "create",
 			Usage:  "create a new machine group",
-			Flags:  []cli.Flag{},
 			Action: CreateCmd,
+			Flags: []cli.Flag{
+				cli.BoolFlag{
+					Name:  "not-provision",
+					Usage: "do not provision the machines in the group",
+				},
+			},
 		},
 		{
 			Name:   "ls",

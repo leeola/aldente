@@ -29,6 +29,10 @@ func ListCmd(ctx *cli.Context) error {
 	}
 	sort.Strings(groups)
 
+	return listMachines(groups)
+}
+
+func listMachines(groups []string) error {
 	w := tabwriter.NewWriter(os.Stdout, 2, 0, 2, ' ', 0)
 	fmt.Fprintln(w, "\tGROUP\tNAME\tPROVIDER")
 
