@@ -82,3 +82,11 @@ func (a *Aldente) Providers() []Provider {
 	}
 	return providers
 }
+
+func (a *Aldente) provisionMachine(mr MachineRecord, po ProvisionOutput) {
+}
+
+// Provision new machine(s) for the given group.
+func (a *Aldente) Provision(group string) (Provision, error) {
+	return nil, errors.New("not implemented")
+}
