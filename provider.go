@@ -2,6 +2,30 @@ package aldente
 
 import "encoding/json"
 
+type ProvisionState int
+
+const (
+	Unknown ProvisionState = iota
+	// Building and Built are not implemented in Aldente yet.
+	//
+	// // Building allows an image to be constructed for the creating state.
+	// //
+	// // They're positioned in front of creating/created, due to VMs/etc being
+	// // based off of an image. Building constructs that image.
+	// //
+	// // This works for Docker style images too, and would allow a builder
+	// // to construct a dockerfile based on the build instructions. The dockerfile
+	// // may or may not contain step based caching, depending on the builder
+	// // implementation.
+	// // Building
+	// // Built
+
+	Creating
+	Created
+	Provisioning
+	Provisioned
+)
+
 // TODO(leeola): Pretty much all of the commands in the interface spec should contain
 // context and/or channel(s) to cancel long running operations. They're being omitted
 // for simplicity during prototyping/PoC.
@@ -29,29 +53,20 @@ type Provider interface {
 	// created.
 	Machine(ProviderRecord) (Machine, error)
 
-	// Provision creates a new machine and then provisions it.
+	// Provision based on the Provider implementation and configuration.
 	//
 	// Configuration is done via the toml config. Eg, if you want a large aws
 	// instance the aws provider will be configured to use a large instance, and
 	// the name of the provider will reflect that it creates a large aws instance.
-	Provision() (Provision, error)
+	//
+	// The actual provisioning steps, such as each ordered set of bash scripts
+	// found in the `[[provisions]]` key, is again configured via the toml file
+	// and upon Provider creation
+	//
+	// The Provider is responsible for unmarshalling all of the building,
+	// provisioning etc config details needed to Provision each machine.
+	Provision(machineName string) (Provisioner, error)
 }
 
-type Provision interface {
-	Output() chan<- ProvisionOutput
-	Wait() (ProvisionStatus, ProvisionRecord, error)
-}
-
-type ProvisionOutput struct {
-	Name            string
-	Provider        string
-	ProvisionStatus ProvisionStatus
-	Message         string
-}
-
-type ProvisionRecord json.RawMessage
-
-// MultiProvison implements channel fanning and multierror provisions.
-type MultiProvision struct {
-	Provisions []Provision
-}
+// ProviderRecord is raw json bytes to store provider data in the database.
+type ProviderRecord json.RawMessage

@@ -87,6 +87,6 @@ func (a *Aldente) provisionMachine(mr MachineRecord, po ProvisionOutput) {
 }
 
 // Provision new machine(s) for the given group.
-func (a *Aldente) Provision(group string) (Provision, error) {
+func (a *Aldente) Provision(group string) (Provisioner, error) {
 	return nil, errors.New("not implemented")
 }

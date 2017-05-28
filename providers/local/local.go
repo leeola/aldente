@@ -30,6 +30,10 @@ func (p *Provider) Type() string {
 	return ProviderType
 }
 
-func (p *Provider) NewMachine(string) (ald.Machine, error) {
+func (p *Provider) Machine(pr ald.ProviderRecord) (ald.Machine, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (p *Provider) Provision(machineName string) (ald.Provisioner, error) {
 	return nil, errors.New("not implemented")
 }
