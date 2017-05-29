@@ -83,10 +83,20 @@ func (a *Aldente) Providers() []Provider {
 	return providers
 }
 
-func (a *Aldente) provisionMachine(mr MachineRecord, po ProvisionOutput) {
+func (a *Aldente) provisionMachine(mc MachineConfig) (Provisioner, error) {
+	p, ok := a.providers[mc.Provider]
+	if !ok {
+		return nil, errors.Errorf("implementation not found for provider: %s", mc.Provider)
+	}
+
+	return p.Provision(mc.Name)
 }
 
 // Provision new machine(s) for the given group.
 func (a *Aldente) Provision(group string) (Provisioner, error) {
-	return nil, errors.New("not implemented")
+	// TODO(leeola): iterate through the machine configs.
+	// for _, mc :=
+	//
+
+	return a.provisionMachine(a.machineConfigs[0])
 }

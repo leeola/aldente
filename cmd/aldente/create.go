@@ -29,8 +29,18 @@ func CreateCmd(ctx *cli.Context) error {
 		// TODO(leeola): this interface is likely to change a lot,
 		// as provisioning is not yet *really* implemented, local just
 		// allocates a machine interface.
-		if _, err := a.Provision(group); err != nil {
+		p, err := a.Provision(group)
+		if err != nil {
 			return err
+		}
+
+		// print the output.
+		for o := range p.Output() {
+			fmt.Printf(
+				"[%s:%s] (%s) %s\n",
+				o.Name, o.Provider,
+				o.State, o.Message,
+			)
 		}
 
 		fmt.Println("\ngroup provisioned machines:")
