@@ -38,5 +38,5 @@ func CreateCmd(ctx *cli.Context) error {
 		fmt.Println("\ngroup created machines:")
 	}
 
-	return listMachines([]string{group})
+	return listMachines(a, []string{group})
 }

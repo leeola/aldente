@@ -7,6 +7,7 @@ import (
 	"sort"
 	"text/tabwriter"
 
+	ald "github.com/leeola/aldente"
 	"github.com/leeola/aldente/autoload"
 	"github.com/urfave/cli"
 )
@@ -29,10 +30,10 @@ func ListCmd(ctx *cli.Context) error {
 	}
 	sort.Strings(groups)
 
-	return listMachines(groups)
+	return listMachines(a, groups)
 }
 
-func listMachines(groups []string) error {
+func listMachines(a *ald.Aldente, groups []string) error {
 	w := tabwriter.NewWriter(os.Stdout, 2, 0, 2, ' ', 0)
 	fmt.Fprintln(w, "\tGROUP\tNAME\tPROVIDER")
 
