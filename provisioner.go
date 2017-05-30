@@ -35,7 +35,7 @@ type Provisioner interface {
 	// Output returns a channel to monitor the progress of a provisioner.
 	//
 	// If an error is encountered, it can be found Wait() return value.
-	Output() <-chan Output
+	Output() <-chan ProvisionOutput
 
 	// Record returns the the ProviderRecord, blocking until it's available.
 	//
@@ -51,7 +51,7 @@ type Provisioner interface {
 }
 
 // ProvisionOutput contains a state and message sent during the provisioning.
-type Output struct {
+type ProvisionOutput struct {
 	// State is state associated with this Output.
 	State ProvisionState `json:"state"`
 

@@ -26,10 +26,10 @@ func (l *Provision) ProviderName() string {
 	return l.config.Name
 }
 
-func (l *Provision) Output() <-chan ald.Output {
+func (l *Provision) Output() <-chan ald.ProvisionOutput {
 	// buffered so our write doesn't block when we send on it.
-	c := make(chan ald.Output, 1)
-	c <- ald.Output{
+	c := make(chan ald.ProvisionOutput, 1)
+	c <- ald.ProvisionOutput{
 		State: ald.Provisioned,
 	}
 	close(c)

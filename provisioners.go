@@ -10,7 +10,7 @@ import (
 type Provisioners []Provisioner
 
 type ProvisionersOutput struct {
-	Output
+	ProvisionOutput
 	MachineName  string
 	ProviderName string
 }
@@ -31,9 +31,9 @@ func (ps Provisioners) Output() <-chan ProvisionersOutput {
 			mn, pn := p.MachineName(), p.ProviderName()
 			for o := range p.Output() {
 				c <- ProvisionersOutput{
-					Output:       o,
-					MachineName:  mn,
-					ProviderName: pn,
+					ProvisionOutput: o,
+					MachineName:     mn,
+					ProviderName:    pn,
 				}
 			}
 			// out of the loop, the output is closed and done for this specific
