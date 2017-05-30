@@ -26,24 +26,31 @@ const (
 
 // Provisioner monitors an ongoing provisioning process.
 type Provisioner interface {
+	// MachineName returns the machine name that is being provisioned.
 	MachineName() string
 
+	// ProviderName returns the provider name that is provisioning the machine.
 	ProviderName() string
 
 	// Output returns a channel to monitor the progress of a provisioner.
 	//
-	// If an error is encountered, it can be found in the Record() channel.
+	// If an error is encountered, it can be found Wait() return value.
 	Output() <-chan Output
 
-	// Record returns the the ProviderRecord once it's available.
+	// Record returns the the ProviderRecord, blocking until it's available.
 	//
-	// Likely, after the provisioning is entirely done.
+	// The provisioning is not guaranteed to be finished when the Record becomes
+	// available. For that, use Wait().
 	Record() (ProviderRecord, error)
 
+	// Wait for the entire Provisioner process to be done.
+	//
+	// If a timeout is needed to prevent waiting too long, use a timeout on the
+	// output(s), while waiting for the Provisioned state.
 	Wait() error
 }
 
-// Output
+// ProvisionOutput contains a state and message sent during the provisioning.
 type Output struct {
 	// State is state associated with this Output.
 	State ProvisionState `json:"state"`
