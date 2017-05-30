@@ -64,3 +64,22 @@ type ProvisionOutput struct {
 	// Message is an optional message for the machine's state.
 	Message string `json:"message,omitempty"`
 }
+
+func (p ProvisionState) String() string {
+	switch p {
+	case Unknown:
+		return "Unknown"
+	case Creating:
+		return "Creating"
+	case Created:
+		return "Created"
+	case Provisioning:
+		return "Provisioning"
+	case Provisioned:
+		return "Provisioned"
+	case Failed:
+		return "Failed"
+	default:
+		return "unhandled provision state"
+	}
+}
