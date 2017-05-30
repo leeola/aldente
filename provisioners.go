@@ -17,11 +17,11 @@ type ProvisionersError struct {
 
 func (ps Provisioners) Output() <-chan ProvisionOutput {
 	c := make(chan ProvisionOutput, 10)
-	var w sync.WaitGroup
+	w := &sync.WaitGroup{}
 	w.Add(len(ps))
 
 	for _, p := range ps {
-		go func(c chan ProvisionOutput, p Provisioner, w sync.WaitGroup) {
+		go func(c chan ProvisionOutput, p Provisioner, w *sync.WaitGroup) {
 			for o := range p.Output() {
 				c <- o
 			}
@@ -31,7 +31,7 @@ func (ps Provisioners) Output() <-chan ProvisionOutput {
 		}(c, p, w)
 	}
 
-	go func(c chan ProvisionOutput, w sync.WaitGroup) {
+	go func(c chan ProvisionOutput, w *sync.WaitGroup) {
 		w.Wait()
 		close(c)
 	}(c, w)
