@@ -98,9 +98,7 @@ func (a *Aldente) provisionMachine(mr MachineRecord) (Provisioner, error) {
 }
 
 // Provision machine(s) for the given group.
-//
-// TODO(leeola): improve MultiProvision type, i don't like the API.
-func (a *Aldente) Provision(group string) (*MultiProvision, error) {
+func (a *Aldente) Provision(group string) (Provisioners, error) {
 	mrs, err := a.db.GroupMachines(group)
 	if err != nil {
 		return nil, err
@@ -115,5 +113,5 @@ func (a *Aldente) Provision(group string) (*MultiProvision, error) {
 		ps[i] = p
 	}
 
-	return &MultiProvision{Ps: ps}, nil
+	return ps, nil
 }

@@ -3,34 +3,34 @@ package aldente
 import (
 	"fmt"
 	"sync"
+
+	"github.com/leeola/errors"
 )
 
-type MultiProvision struct {
-	Ps []Provisioner
-}
+type Provisioners []Provisioner
 
-type MultiError struct {
-	MachineName  string
-	ProviderName string
-	Err          error
-}
-
-type MultiOutput struct {
+type ProvisionersOutput struct {
 	Output
 	MachineName  string
 	ProviderName string
 }
 
-func (m *MultiProvision) Output() <-chan MultiOutput {
-	c := make(chan MultiOutput, 10)
-	var w sync.WaitGroup
-	w.Add(len(m.Ps))
+type ProvisionersError struct {
+	MachineName  string
+	ProviderName string
+	Err          error
+}
 
-	for _, p := range m.Ps {
-		go func(c chan MultiOutput, p Provisioner, w sync.WaitGroup) {
+func (ps Provisioners) Output() <-chan ProvisionersOutput {
+	c := make(chan ProvisionersOutput, 10)
+	var w sync.WaitGroup
+	w.Add(len(ps))
+
+	for _, p := range ps {
+		go func(c chan ProvisionersOutput, p Provisioner, w sync.WaitGroup) {
 			mn, pn := p.MachineName(), p.ProviderName()
 			for o := range p.Output() {
-				c <- MultiOutput{
+				c <- ProvisionersOutput{
 					Output:       o,
 					MachineName:  mn,
 					ProviderName: pn,
@@ -42,7 +42,7 @@ func (m *MultiProvision) Output() <-chan MultiOutput {
 		}(c, p, w)
 	}
 
-	go func(c chan MultiOutput, w sync.WaitGroup) {
+	go func(c chan ProvisionersOutput, w sync.WaitGroup) {
 		w.Wait()
 		close(c)
 	}(c, w)
@@ -50,16 +50,16 @@ func (m *MultiProvision) Output() <-chan MultiOutput {
 	return c
 }
 
-func (m *MultiProvision) Wait() []error {
+func (ps Provisioners) Wait() error {
 	var errs []error
 	// all of the provisioners must be complete, so the
 	// order in which we collect the errors does not matter.
 	//
 	// Ie, it's not inefficient to wait for them in slice order,
 	// even though they'll be completing in random order.
-	for _, p := range m.Ps {
+	for _, p := range ps {
 		if err := p.Wait(); err != nil {
-			errs = append(errs, MultiError{
+			errs = append(errs, ProvisionersError{
 				MachineName:  p.MachineName(),
 				ProviderName: p.ProviderName(),
 				Err:          err,
@@ -67,9 +67,9 @@ func (m *MultiProvision) Wait() []error {
 		}
 	}
 
-	return errs
+	return errors.JoinSep(errs, "\n")
 }
 
-func (e MultiError) Error() string {
+func (e ProvisionersError) Error() string {
 	return fmt.Sprintf("%s-%s: %s", e.ProviderName, e.MachineName, e.Err.Error())
 }
