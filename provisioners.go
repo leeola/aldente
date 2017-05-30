@@ -9,32 +9,21 @@ import (
 
 type Provisioners []Provisioner
 
-type ProvisionersOutput struct {
-	ProvisionOutput
-	MachineName  string
-	ProviderName string
-}
-
 type ProvisionersError struct {
 	MachineName  string
 	ProviderName string
 	Err          error
 }
 
-func (ps Provisioners) Output() <-chan ProvisionersOutput {
-	c := make(chan ProvisionersOutput, 10)
+func (ps Provisioners) Output() <-chan ProvisionOutput {
+	c := make(chan ProvisionOutput, 10)
 	var w sync.WaitGroup
 	w.Add(len(ps))
 
 	for _, p := range ps {
-		go func(c chan ProvisionersOutput, p Provisioner, w sync.WaitGroup) {
-			mn, pn := p.MachineName(), p.ProviderName()
+		go func(c chan ProvisionOutput, p Provisioner, w sync.WaitGroup) {
 			for o := range p.Output() {
-				c <- ProvisionersOutput{
-					ProvisionOutput: o,
-					MachineName:     mn,
-					ProviderName:    pn,
-				}
+				c <- o
 			}
 			// out of the loop, the output is closed and done for this specific
 			// provisioner.
@@ -42,7 +31,7 @@ func (ps Provisioners) Output() <-chan ProvisionersOutput {
 		}(c, p, w)
 	}
 
-	go func(c chan ProvisionersOutput, w sync.WaitGroup) {
+	go func(c chan ProvisionOutput, w sync.WaitGroup) {
 		w.Wait()
 		close(c)
 	}(c, w)

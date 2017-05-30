@@ -30,7 +30,9 @@ func (l *Provision) Output() <-chan ald.ProvisionOutput {
 	// buffered so our write doesn't block when we send on it.
 	c := make(chan ald.ProvisionOutput, 1)
 	c <- ald.ProvisionOutput{
-		State: ald.Provisioned,
+		MachineName:  l.MachineName(),
+		ProviderName: l.ProviderName(),
+		State:        ald.Provisioned,
 	}
 	close(c)
 	return c

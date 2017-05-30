@@ -39,7 +39,7 @@ type Provisioner interface {
 
 	// Record returns the the ProviderRecord, blocking until it's available.
 	//
-	// The provisioning is not guaranteed to be finished when the Record becomes
+	// Provisioning is not guaranteed to be finished when the Record becomes
 	// available. For that, use Wait().
 	Record() (ProviderRecord, error)
 
@@ -52,6 +52,12 @@ type Provisioner interface {
 
 // ProvisionOutput contains a state and message sent during the provisioning.
 type ProvisionOutput struct {
+	// MachineName returns the machine name that is being provisioned.
+	MachineName string `json:"machineName"`
+
+	// ProviderName returns the provider name that is provisioning the machine.
+	ProviderName string `json:"providerName"`
+
 	// State is state associated with this Output.
 	State ProvisionState `json:"state"`
 
