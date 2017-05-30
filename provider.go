@@ -27,7 +27,7 @@ type Provider interface {
 	// The ProviderRecord allows the provider to establish a connection from
 	// the information it previously associated with the the machine when it was
 	// created.
-	Machine(ProviderRecord) (Machine, error)
+	Machine(MachineRecord) (Machine, error)
 
 	// Provision based on the Provider implementation and configuration.
 	//
@@ -44,5 +44,8 @@ type Provider interface {
 	Provision(machineName string) (Provisioner, error)
 }
 
-// ProviderRecord is raw json bytes to store provider data in the database.
+// ProviderRecord stores Provider data within a MachineRecord in the database.
+//
+// This raw json allows the Provider to instatiate Machine interfaces for a
+// specific machine at any time.
 type ProviderRecord json.RawMessage

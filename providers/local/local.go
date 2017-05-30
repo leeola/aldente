@@ -1,8 +1,6 @@
 package local
 
 import (
-	"encoding/json"
-
 	ald "github.com/leeola/aldente"
 	"github.com/leeola/errors"
 )
@@ -37,40 +35,10 @@ func (l *Local) Type() string {
 	return ProviderType
 }
 
-func (l *Local) Machine(pr ald.ProviderRecord) (ald.Machine, error) {
+func (l *Local) Machine(pr ald.MachineRecord) (ald.Machine, error) {
 	return nil, errors.New("not implemented")
 }
 
 func (l *Local) Provision(machineName string) (ald.Provisioner, error) {
-	// local implements the provisioner
-	return l, nil
-}
-
-func (l *Local) Output() <-chan ald.ProvisionOutput {
-	// buffered so our write doesn't block when we send on it.
-	c := make(chan ald.ProvisionOutput, 1)
-	c <- ald.ProvisionOutput{
-		Name:     l.config.Name,
-		Provider: ProviderType,
-		ProvisionStatus: ald.ProvisionStatus{
-			State: ald.Provisioned,
-		},
-	}
-	close(c)
-	return c
-}
-
-func (l *Local) Wait() (ald.ProvisionHistory, ald.ProviderRecord, error) {
-	h := ald.ProvisionHistory{
-		ald.ProvisionStatus{
-			State: ald.Provisioned,
-		},
-	}
-
-	j, err := json.Marshal(l.config)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return h, ald.ProviderRecord(j), nil
+	return NewProvision(machineName, l.config)
 }

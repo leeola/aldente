@@ -23,7 +23,7 @@ type MachineRecord struct {
 	Provider string `json:"provider"`
 
 	// ProvisionHistory records each status in order.
-	ProvisionHistory ProvisionHistory `json:"provisionHistory"`
+	// ProvisionHistory ProvisionHistory `json:"provisionHistory"`
 
 	// ProviderRecord is provider specific data for the given record.
 	//

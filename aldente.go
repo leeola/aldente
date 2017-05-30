@@ -83,20 +83,35 @@ func (a *Aldente) Providers() []Provider {
 	return providers
 }
 
-func (a *Aldente) provisionMachine(mc MachineConfig) (Provisioner, error) {
-	p, ok := a.providers[mc.Provider]
+func (a *Aldente) provisionMachine(mr MachineRecord) (Provisioner, error) {
+	provider, ok := a.providers[mr.Provider]
 	if !ok {
-		return nil, errors.Errorf("implementation not found for provider: %s", mc.Provider)
+		return nil, errors.Errorf("implementation not found for provider: %s", mr.Provider)
 	}
 
-	return p.Provision(mc.Name)
+	provisioner, err := provider.Provision(mr.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewDbProvisioner(a.db, mr, provisioner), nil
 }
 
-// Provision new machine(s) for the given group.
-func (a *Aldente) Provision(group string) (Provisioner, error) {
-	// TODO(leeola): iterate through the machine configs.
-	// for _, mc :=
-	//
+// Provision machine(s) for the given group.
+func (a *Aldente) Provision(group string) (*MultiProvision, error) {
+	mrs, err := a.db.GroupMachines(group)
+	if err != nil {
+		return nil, err
+	}
 
-	return a.provisionMachine(a.machineConfigs[0])
+	ps := make([]Provisioner, len(mrs))
+	for i, mr := range mrs {
+		p, err := a.provisionMachine(mr)
+		if err != nil {
+			return nil, err
+		}
+		ps[i] = p
+	}
+
+	return &MultiProvision{Ps: ps}, nil
 }

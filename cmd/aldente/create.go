@@ -38,7 +38,7 @@ func CreateCmd(ctx *cli.Context) error {
 		for o := range p.Output() {
 			fmt.Printf(
 				"[%s:%s] (%s) %s\n",
-				o.Name, o.Provider,
+				o.MachineName, o.ProviderName,
 				o.State, o.Message,
 			)
 		}
