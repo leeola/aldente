@@ -5,6 +5,7 @@ import "github.com/leeola/errors"
 type Config struct {
 	ConfigPaths    []string
 	Db             Database
+	CommandConfigs []CommandConfig
 	MachineConfigs []MachineConfig
 	Providers      []Provider
 }
@@ -18,6 +19,7 @@ type Aldente struct {
 	providers map[string]Provider
 
 	machineConfigs []MachineConfig
+	commandConfigs []CommandConfig
 }
 
 func New(c Config) (*Aldente, error) {
@@ -49,6 +51,7 @@ func New(c Config) (*Aldente, error) {
 		db:             c.Db,
 		providers:      providersMap,
 		machineConfigs: c.MachineConfigs,
+		commandConfigs: c.CommandConfigs,
 	}, nil
 }
 
@@ -60,6 +63,11 @@ func (a *Aldente) Groups() ([]string, error) {
 // GroupMachines lists machines for the given group.
 func (a *Aldente) GroupMachines(group string) ([]MachineRecord, error) {
 	return a.db.GroupMachines(group)
+}
+
+// Commands lists the configured commands.
+func (a *Aldente) Commands() []CommandConfig {
+	return a.commandConfigs[:]
 }
 
 // NewGroup creates a new machine group based on the configuration.

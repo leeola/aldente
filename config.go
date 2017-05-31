@@ -8,3 +8,9 @@ type MachineConfig struct {
 	Name     string `toml:"name"`
 	Provider string `toml:"provider"`
 }
+
+type CommandConfig struct {
+	Name     string   `toml:"name"`
+	Machines []string `toml:"machines"`
+	Script   string   `toml:"script"`
+}

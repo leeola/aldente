@@ -63,10 +63,11 @@ func LoadAldente(configPaths []string) (*ald.Aldente, error) {
 		return nil, err
 	}
 
-	var machines struct {
-		Configs []ald.MachineConfig `toml:"machine"`
+	var conf struct {
+		Machines []ald.MachineConfig `toml:"machine"`
+		Commands []ald.CommandConfig `toml:"command"`
 	}
-	if err := cu.Unmarshal(&machines); err != nil {
+	if err := cu.Unmarshal(&conf); err != nil {
 		return nil, err
 	}
 
@@ -74,7 +75,8 @@ func LoadAldente(configPaths []string) (*ald.Aldente, error) {
 		ConfigPaths:    configPaths,
 		Db:             db,
 		Providers:      p,
-		MachineConfigs: machines.Configs,
+		MachineConfigs: conf.Machines,
+		CommandConfigs: conf.Commands,
 	}
 	return ald.New(aConf)
 }

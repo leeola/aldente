@@ -29,7 +29,7 @@ func main() {
 		{
 			Name:   "commands",
 			Usage:  "list commands defined in the configuration",
-			Action: NotImplementedCmd,
+			Action: CommandsCmd,
 		},
 		{
 			Name:   "create",
