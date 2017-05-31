@@ -1,14 +1,15 @@
 package aldente
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/leeola/errors"
 )
 
 type Command interface {
-	// CommandName returns the name the running command.
-	CommandName() string
+	// Name returns the name the running command.
+	Name() string
 
 	// MachineName returns the machine name that is running the command.
 	MachineName() string
@@ -18,14 +19,17 @@ type Command interface {
 	// If an error is encountered, it can be found Wait() return value.
 	Output() <-chan CommandOutput
 
+	// Start the command's execution.
+	Start() error
+
 	// Wait for the entire Command process to be done.
 	Wait() error
 }
 
 // CommandOutput contains a state and message sent during the provisioning.
 type CommandOutput struct {
-	// CommandName of the command that is running.
-	CommandName string `json:"commandName"`
+	// Name of the command that is running.
+	Name string `json:"name"`
 
 	// MachineName returns the machine name that is being provisioned.
 	MachineName string `json:"machineName"`
@@ -36,8 +40,8 @@ type CommandOutput struct {
 
 type Commands []Command
 
-type CommandsError struct {
-	CommandName string
+type CommandError struct {
+	Name        string
 	MachineName string
 	Err         error
 }
@@ -45,7 +49,7 @@ type CommandsError struct {
 func (cmds Commands) Output() <-chan CommandOutput {
 	c := make(chan CommandOutput, 10)
 	w := &sync.WaitGroup{}
-	w.Add(len(ps))
+	w.Add(len(cmds))
 
 	for _, cmd := range cmds {
 		go func(c chan CommandOutput, cmd Command, w *sync.WaitGroup) {
@@ -73,15 +77,19 @@ func (cmds Commands) Wait() error {
 	//
 	// Ie, it's not inefficient to wait for them in slice order,
 	// even though they'll be completing in random order.
-	for _, p := range cmds {
-		if err := p.Wait(); err != nil {
+	for _, c := range cmds {
+		if err := c.Wait(); err != nil {
 			errs = append(errs, CommandError{
-				CommandName: p.CommandName(),
-				MachineName: p.MachineName(),
+				Name:        c.Name(),
+				MachineName: c.MachineName(),
 				Err:         err,
 			})
 		}
 	}
 
 	return errors.JoinSep(errs, "\n")
+}
+
+func (e CommandError) Error() string {
+	return fmt.Sprintf("%s-%s: %s", e.Name, e.MachineName, e.Err.Error())
 }

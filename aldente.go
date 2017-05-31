@@ -27,7 +27,7 @@ type Aldente struct {
 	providers map[string]Provider
 
 	machineConfigs []MachineConfig
-	commandConfigs []CommandConfig
+	commandConfigs map[string]CommandConfig
 }
 
 func New(c Config) (*Aldente, error) {
@@ -54,12 +54,20 @@ func New(c Config) (*Aldente, error) {
 		providersMap[n] = p
 	}
 
+	commands := map[string]CommandConfig{}
+	for _, c := range c.CommandConfigs {
+		if _, exists := commands[c.Name]; exists {
+			return nil, errors.New("duplicate command name in config")
+		}
+		commands[c.Name] = c
+	}
+
 	return &Aldente{
 		config:         c,
 		db:             c.Db,
 		providers:      providersMap,
 		machineConfigs: c.MachineConfigs,
-		commandConfigs: c.CommandConfigs,
+		commandConfigs: commands,
 	}, nil
 }
 
@@ -75,12 +83,51 @@ func (a *Aldente) GroupMachines(group string) ([]MachineRecord, error) {
 
 // Commands lists the configured commands.
 func (a *Aldente) Commands() []CommandConfig {
-	return a.commandConfigs[:]
+	var c []CommandConfig
+	for _, v := range a.commandConfigs {
+		c = append(c, v)
+	}
+	return c
 }
 
 // Command executes the given command for the given machine.
-func (a *Aldente) Command(group, command string) ([]Command, error) {
-	return nil, nil
+func (a *Aldente) Command(group, commandName string) (Commands, error) {
+	machineRecords, err := a.db.GroupMachines(group)
+	if err != nil {
+		return nil, err
+	}
+
+	commandConfig, ok := a.commandConfigs[commandName]
+	if !ok {
+		return nil, errors.Errorf("command not found in config: %s", commandName)
+	}
+
+	totalMachines := len(commandConfig.Machines)
+	if totalMachines == 0 {
+		return nil, errors.New("no machines configured for command")
+	}
+
+	commands := make(Commands, totalMachines)
+	for i, mr := range machineRecords {
+		p, ok := a.providers[mr.Provider]
+		if !ok {
+			return nil, errors.Errorf("recorded machine provider not configured: %s",
+				mr.Provider)
+		}
+
+		m, err := p.Machine(mr)
+		if err != nil {
+			return nil, err
+		}
+
+		c, err := m.Run(commandConfig.Script)
+		if err != nil {
+			return nil, err
+		}
+		commands[i] = c
+	}
+
+	return commands, nil
 }
 
 // NewGroup creates a new machine group based on the configuration.

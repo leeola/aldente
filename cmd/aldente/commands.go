@@ -16,7 +16,7 @@ func CommandsCmd(ctx *cli.Context) error {
 		return err
 	}
 
-	trimScriptTo := 15
+	trimScriptTo := 25
 
 	w := tabwriter.NewWriter(os.Stdout, 2, 0, 2, ' ', 0)
 	fmt.Fprintln(w, "\tCOMMAND\tMACHINES\tSCRIPT")
@@ -27,9 +27,8 @@ func CommandsCmd(ctx *cli.Context) error {
 		} else {
 			script = c.Script[:trimScriptTo] + "..."
 		}
-		script = strings.Replace(script, "\n", " \\n ", -1)
 
-		fmt.Fprintln(w, fmt.Sprintf("%d\t%s\t%s\t%s", i+1,
+		fmt.Fprintln(w, fmt.Sprintf("%d\t%s\t%s\t%q", i+1,
 			c.Name, strings.Join(c.Machines, ","), script))
 	}
 

@@ -1,14 +1,10 @@
 package aldente
 
-import "io"
-
 // Machine that can run commands via the underlying transport.
 type Machine interface {
-	io.Closer
-
 	Name() string
-	Provider() string
-	Run(io.Reader) (io.Reader, error)
+	ProviderName() string
+	Run(script string) (Command, error)
 }
 
 // MachineRecord contains information to be able to store and reconstruct a Machine.

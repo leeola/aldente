@@ -12,11 +12,6 @@ type Config struct {
 	Workdir string
 }
 
-// Local implements Provider, Provisioner, and Machine for the local system.
-//
-// Local implements all of these because the local system has no provisioning
-// steps currently. If any are added in the future, they will likely require
-// Local to  split functionality into specific implementations.
 type Local struct {
 	config Config
 }
