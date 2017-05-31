@@ -2,10 +2,6 @@ package aldente
 
 import "encoding/json"
 
-// TODO(leeola): Pretty much all of the commands in the interface spec should contain
-// context and/or channel(s) to cancel long running operations. They're being omitted
-// for simplicity during prototyping/PoC.
-
 // Provider is responsible for creating machines.
 //
 // This may be on the cloud, local vmware, docker, etc.

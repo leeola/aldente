@@ -2,6 +2,14 @@ package aldente
 
 import "github.com/leeola/errors"
 
+// TODO(leeola): Pretty much all of the commands in the aldente package spec should
+// contain context and/or channel(s) to cancel long running operations. They're
+// being omitted for simplicity during prototyping/PoC.
+//
+// As an alternative, i may change the entire structure to be daemon based so
+// that users can attach and detatch from long running deployments. Hard to say
+// which direction i want to go during this prototype.
+
 type Config struct {
 	ConfigPaths    []string
 	Db             Database
@@ -68,6 +76,11 @@ func (a *Aldente) GroupMachines(group string) ([]MachineRecord, error) {
 // Commands lists the configured commands.
 func (a *Aldente) Commands() []CommandConfig {
 	return a.commandConfigs[:]
+}
+
+// Command executes the given command for the given machine.
+func (a *Aldente) Command(group, command string) ([]Command, error) {
+	return nil, nil
 }
 
 // NewGroup creates a new machine group based on the configuration.
