@@ -1,6 +1,10 @@
 package aldente
 
-import "github.com/leeola/errors"
+import (
+	"io"
+
+	"github.com/leeola/errors"
+)
 
 // TODO(leeola): Pretty much all of the commands in the aldente package spec should
 // contain context and/or channel(s) to cancel long running operations. They're
@@ -91,7 +95,7 @@ func (a *Aldente) Commands() []CommandConfig {
 }
 
 // Command executes the given command for the given machine.
-func (a *Aldente) Command(group, commandName string) (Commands, error) {
+func (a *Aldente) Command(w io.Writer, group, commandName string) (Commands, error) {
 	machineRecords, err := a.db.GroupMachines(group)
 	if err != nil {
 		return nil, err
@@ -120,7 +124,14 @@ func (a *Aldente) Command(group, commandName string) (Commands, error) {
 			return nil, err
 		}
 
-		c, err := m.Run(commandConfig.Script)
+		// TODO(leeola): here we will create fmtio writers and pass them to the
+		// command. With each writer, we'll spin a goroutine and wait for the
+		// command to be done. Once done, we will flush the fmt writer.
+		//
+		// This keeps the API for writing commands simple, while still
+		// allowing more advanced write formatting like tabbed columns,
+		// grouped lines, etc.
+		c, err := m.Command(w, commandConfig.Script)
 		if err != nil {
 			return nil, err
 		}

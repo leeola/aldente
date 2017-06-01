@@ -2,7 +2,6 @@ package aldente
 
 import (
 	"fmt"
-	"sync"
 
 	"github.com/leeola/errors"
 )
@@ -14,11 +13,6 @@ type Command interface {
 	// MachineName returns the machine name that is running the command.
 	MachineName() string
 
-	// Output returns a channel to monitor the progress of a command.
-	//
-	// If an error is encountered, it can be found Wait() return value.
-	Output() <-chan CommandOutput
-
 	// Start the command's execution.
 	Start() error
 
@@ -26,50 +20,28 @@ type Command interface {
 	Wait() error
 }
 
-// CommandOutput contains a state and message sent during the provisioning.
-type CommandOutput struct {
-	// Name of the command that is running.
-	Name string `json:"name"`
-
-	// MachineName returns the machine name that is being provisioned.
-	MachineName string `json:"machineName"`
-
-	// Message is an output, likely a text line, from the given machine.
-	Message string `json:"message"`
-}
-
+// Commands convenience methods like Start and Wait for underlying Commands.
 type Commands []Command
 
-type CommandError struct {
+// CommandsError provides metadata about the command that resulted in an error.
+type CommandsError struct {
 	Name        string
 	MachineName string
 	Err         error
 }
 
-func (cmds Commands) Output() <-chan CommandOutput {
-	c := make(chan CommandOutput, 10)
-	w := &sync.WaitGroup{}
-	w.Add(len(cmds))
-
-	for _, cmd := range cmds {
-		go func(c chan CommandOutput, cmd Command, w *sync.WaitGroup) {
-			for o := range cmd.Output() {
-				c <- o
-			}
-			// out of the loop, the output is closed and done for this specific
-			// provisioner.
-			w.Done()
-		}(c, cmd, w)
+// Start all commands.
+func (cmds Commands) Start() error {
+	for _, c := range cmds {
+		if err := c.Start(); err != nil {
+			return err
+		}
 	}
 
-	go func(c chan CommandOutput, w *sync.WaitGroup) {
-		w.Wait()
-		close(c)
-	}(c, w)
-
-	return c
+	return nil
 }
 
+// Wait for all commands.
 func (cmds Commands) Wait() error {
 	var errs []error
 	// all of the commands must be complete, so the
@@ -79,7 +51,7 @@ func (cmds Commands) Wait() error {
 	// even though they'll be completing in random order.
 	for _, c := range cmds {
 		if err := c.Wait(); err != nil {
-			errs = append(errs, CommandError{
+			errs = append(errs, CommandsError{
 				Name:        c.Name(),
 				MachineName: c.MachineName(),
 				Err:         err,
@@ -90,6 +62,6 @@ func (cmds Commands) Wait() error {
 	return errors.JoinSep(errs, "\n")
 }
 
-func (e CommandError) Error() string {
+func (e CommandsError) Error() string {
 	return fmt.Sprintf("%s-%s: %s", e.Name, e.MachineName, e.Err.Error())
 }
