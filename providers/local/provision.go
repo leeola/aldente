@@ -6,15 +6,20 @@ import (
 	ald "github.com/leeola/aldente"
 )
 
-type Provision struct {
-	config      Config
-	machineName string
+type ProvisionConfig struct {
 }
 
-func NewProvision(machineName string, c Config) (*Provision, error) {
+type Provision struct {
+	config           ProviderConfig
+	provisionConfigs []ProvisionConfig
+	machineName      string
+}
+
+func NewProvision(machineName string, pdrConf ProviderConfig, psnConf []ProvisionConfig) (*Provision, error) {
 	return &Provision{
-		config:      c,
-		machineName: machineName,
+		config:           pdrConf,
+		provisionConfigs: psnConf,
+		machineName:      machineName,
 	}, nil
 }
 

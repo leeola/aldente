@@ -14,12 +14,13 @@ func init() {
 
 func Loader(cu cu.ConfigUnmarshaller) ([]ald.Provider, error) {
 	var rootC struct {
-		DontExpandHome bool `toml:"dontExpandHome"`
-		Configs        []struct {
-			local.Config
+		DontExpandHome  bool `toml:"dontExpandHome"`
+		ProviderConfigs []struct {
+			local.ProviderConfig
 			DontExpandHome *bool  `toml:"dontExpandHome"`
 			Type           string `toml:"type"`
 		} `toml:"provider"`
+		ProvisionConfigs []local.ProvisionConfig `toml:"provision"`
 	}
 
 	if err := cu.Unmarshal(&rootC); err != nil {
@@ -28,14 +29,14 @@ func Loader(cu cu.ConfigUnmarshaller) ([]ald.Provider, error) {
 
 	var ps []ald.Provider
 	// create local providers for each of the configured providers
-	for _, c := range rootC.Configs {
+	for _, c := range rootC.ProviderConfigs {
 		if c.Type != local.ProviderType {
 			continue
 		}
 
 		c.Workdir = util.HomeExpander(c.Workdir, rootC.DontExpandHome, c.DontExpandHome)
 
-		p, err := local.New(c.Config)
+		p, err := local.New(c.ProviderConfig)
 		if err != nil {
 			return nil, err
 		}

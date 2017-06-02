@@ -128,7 +128,7 @@ func (a *Aldente) Command(w io.Writer, group, commandName string) (Commands, err
 		// command. With each writer, we'll spin a goroutine and wait for the
 		// command to be done. Once done, we will flush the fmt writer.
 		//
-		// This keeps the API for writing commands simple, while still
+		// This keeps the API for commands simple, while still
 		// allowing more advanced write formatting like tabbed columns,
 		// grouped lines, etc.
 		c, err := m.Command(w, commandConfig.Script)

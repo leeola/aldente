@@ -34,7 +34,5 @@ func CommandCmd(ctx *cli.Context) error {
 		return err
 	}
 
-	if err := commands.Wait(); err != nil {
-		return err
-	}
+	return commands.Wait()
 }

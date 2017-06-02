@@ -24,7 +24,7 @@ func main() {
 		{
 			Name:   "command",
 			Usage:  "run commands defined in the configuration",
-			Action: NotImplementedCmd,
+			Action: CommandCmd,
 		},
 		{
 			Name:   "commands",

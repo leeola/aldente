@@ -3,30 +3,38 @@
 # The name of the provider allows machines to refer to this specific providers
 # configuration. For example, AWS-Large, or DigitalOceanMedium would be a name
 # referring to how this provider is configured.
-name = "local machine"
+name = "repo provider"
 
 # The type of the provider identifies the actual code that will be implementing
 # this provider. Run `aldente providers --registered` to see the specific
 # providers that are available currently.
 type = "local"
 
-# a machine is provided by the provider.
-[[machine]]
-name = "repo"
-provider = "local machine"
-
-# another machine, provided by the "local machine" provider.
-# Note that both of the machines are using the "local" provider, and
-# therefor are the same physical machine, they are just configured
-# differently. In this case, their working directory is different.
-[[machine]]
-name = "examples"
-provider = "local machine"
+# normally providers describe the size of the machine, but in the case of the
+# local provider it describes the location on the filesystem.
+[[provider]]
+name = "examples provider"
+type = "local"
 workdir = "./_examples"
 
-# a command is instructions to run on the given machines.
+# a machine is provided by the provider and is the basis for provisioning and
+# running commands.
+#
+# Note that all configuration of the specific machine is done by the provider
+# configuration. This machine section just describes machines within your
+# deployment stack, or machine group in aldente terms.
+[[machine]]
+name = "repo"
+provider = "repo provider"
+
+[[machine]]
+name = "example"
+provider = "examples provider"
+
+# a command is a script or executable to run the given machines.
 [[command]]
 name = "hello"
+# commands must be configured to run on specified machines.
 machines = ["repo"]
 # the script is uploaded and run on whatever machines are specified
 # in the machine list.
@@ -34,7 +42,7 @@ script = 'echo hello world'
 
 [[command]]
 name = "ls"
-machines = ["repo", "examples"]
+machines = ["repo", "example"]
 # scripts can be multiline.
 script = '''
 pwd

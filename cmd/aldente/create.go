@@ -43,6 +43,10 @@ func CreateCmd(ctx *cli.Context) error {
 			)
 		}
 
+		if err := p.Wait(); err != nil {
+			return err
+		}
+
 		fmt.Println("\ngroup provisioned machines:")
 	} else {
 		fmt.Println("\ngroup created machines:")

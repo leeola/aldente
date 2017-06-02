@@ -7,9 +7,13 @@ import (
 )
 
 type nopFlusher struct {
-	w io.Writer
+	io.Writer
 }
 
 func NopFlusher(w io.Writer) fmtio.WriteFlusher {
-	return &nopFlusher{w: w}
+	return &nopFlusher{Writer: w}
+}
+
+func (nopFlusher) Flush() error {
+	return nil
 }

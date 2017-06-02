@@ -45,5 +45,5 @@ func (p *DbProvisioner) Wait() error {
 		return err
 	}
 
-	return p.Wait()
+	return p.Provisioner.Wait()
 }
