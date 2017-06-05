@@ -131,7 +131,7 @@ func (a *Aldente) Command(w io.Writer, group, commandName string) (Commands, err
 		// This keeps the API for commands simple, while still
 		// allowing more advanced write formatting like tabbed columns,
 		// grouped lines, etc.
-		c, err := m.Command(w, commandConfig.Script)
+		c, err := m.Command(w, commandConfig)
 		if err != nil {
 			return nil, err
 		}

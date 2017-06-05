@@ -43,7 +43,7 @@ func (p *Provider) Machine(mr ald.MachineRecord) (ald.Machine, error) {
 	// the machine to always use the same settings. So, we unmarshal what
 	// was stored.
 	var providerRecord ProviderConfig
-	if err := json.Unmarshal(&providerRecord, mr.ProviderRecord); err != nil {
+	if err := json.Unmarshal(mr.ProviderRecord, &providerRecord); err != nil {
 		return nil, err
 	}
 

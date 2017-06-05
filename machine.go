@@ -5,8 +5,9 @@ import "io"
 // Machine that can run commands via the underlying transport.
 type Machine interface {
 	Name() string
+	GroupName() string
 	ProviderName() string
-	Command(w io.Writer, script string) (Command, error)
+	Command(io.Writer, CommandConfig) (Command, error)
 }
 
 // MachineRecord contains information to be able to store and reconstruct a Machine.
