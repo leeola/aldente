@@ -94,57 +94,55 @@ func (a *Aldente) Commands() []CommandConfig {
 	return c
 }
 
+func (a *Aldente) machineCommand(w io.Writer, r MachineRecord, c CommandConfig) error {
+	p, ok := a.providers[r.Provider]
+	if !ok {
+		return errors.Errorf("recorded machine provider not configured: %s", r.Provider)
+	}
+
+	// TODO(leeola): here we will create fmtio writers and pass them to the
+	// command. With each writer, we'll spin a goroutine and wait for the
+	// command to be done. Once done, we will flush the fmt writer.
+	//
+	// This keeps the API for commands simple, while still
+	// allowing more advanced write formatting like tabbed columns,
+	// grouped lines, etc.
+	return p.Command(w, r, c)
+}
+
 // Command executes the given command for the given machine.
-func (a *Aldente) Command(w io.Writer, group, commandName string) (Commands, error) {
+func (a *Aldente) Command(w io.Writer, group, commandName string) error {
 	machineRecords, err := a.db.GroupMachines(group)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	commandConfig, ok := a.commandConfigs[commandName]
 	if !ok {
-		return nil, errors.Errorf("command not found in config: %s", commandName)
+		return errors.Errorf("command not found in config: %s", commandName)
 	}
 
 	totalMachines := len(commandConfig.Machines)
 	if totalMachines == 0 {
-		return nil, errors.New("no machines configured for command")
+		return errors.New("no machines configured for command")
 	}
 
-	commands := make(Commands, totalMachines)
-	for i, machineName := range commandConfig.Machines {
-		mr, ok := findMachineRecord(machineRecords, machineName)
+	var errs []error
+
+	// TODO(leeola): run these concurrently.
+	for _, machineName := range commandConfig.Machines {
+		r, ok := findMachineRecord(machineRecords, machineName)
 		if !ok {
-			return nil, errors.Errorf(
+			return errors.Errorf(
 				"command configuration not found in machine record: %s", machineName)
 		}
 
-		p, ok := a.providers[mr.Provider]
-		if !ok {
-			return nil, errors.Errorf("recorded machine provider not configured: %s",
-				mr.Provider)
+		if err := a.machineCommand(w, r, commandConfig); err != nil {
+			errs = append(errs, err)
 		}
-
-		m, err := p.Machine(mr)
-		if err != nil {
-			return nil, err
-		}
-
-		// TODO(leeola): here we will create fmtio writers and pass them to the
-		// command. With each writer, we'll spin a goroutine and wait for the
-		// command to be done. Once done, we will flush the fmt writer.
-		//
-		// This keeps the API for commands simple, while still
-		// allowing more advanced write formatting like tabbed columns,
-		// grouped lines, etc.
-		c, err := m.Command(w, commandConfig)
-		if err != nil {
-			return nil, err
-		}
-		commands[i] = c
 	}
 
-	return commands, nil
+	return errors.JoinSep(errs, "\n")
 }
 
 // NewGroup creates a new machine group based on the configuration.
@@ -187,16 +185,21 @@ func (a *Aldente) provisionMachine(w io.Writer, mRecord MachineRecord) error {
 	return nil
 }
 
-// Provision machine(s) for the given group.
+// Provision create group and provision machine(s).
 func (a *Aldente) Provision(w io.Writer, group string) error {
+	if err := a.CreateGroup(group); err != nil {
+		return err
+	}
+
 	mrs, err := a.db.GroupMachines(group)
 	if err != nil {
 		return err
 	}
 
 	var errs []error
+
+	// TODO(leeola): run these concurrently.
 	for _, mr := range mrs {
-		// TODO(leeola): run these concurrently.
 		if err := a.provisionMachine(w, mr); err != nil {
 			// TODO(leeola): return a custom error object with the machine name and
 			// provider included in the message and in the struct.

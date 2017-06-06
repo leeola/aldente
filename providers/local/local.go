@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"os/exec"
 
 	ald "github.com/leeola/aldente"
 	"github.com/leeola/errors"
@@ -38,24 +39,26 @@ func (p *Provider) Type() string {
 	return ProviderType
 }
 
-func (p *Provider) Machine(mr ald.MachineRecord) (ald.Machine, error) {
-	if len(mr.ProviderRecord) == 0 {
-		return nil, errors.New("machine not provisioned")
+func (p *Provider) Command(w io.Writer, r ald.MachineRecord, c ald.CommandConfig) error {
+	// TODO(leeola): Convert to use the eventual r.History.Last() state.
+	if len(r.ProviderRecord) == 0 {
+		return errors.New("machine not provisioned")
 	}
 
 	// the stored providerconfig *should* be the same as the current
 	// ProviderConfig, but if the user changed a value in it then we want
 	// the machine to always use the same settings. So, we unmarshal what
 	// was stored.
-	var providerRecord ProviderConfig
-	if err := json.Unmarshal(mr.ProviderRecord, &providerRecord); err != nil {
-		return nil, err
+	var pConfig ProviderConfig
+	if err := json.Unmarshal(r.ProviderRecord, &pConfig); err != nil {
+		return err
 	}
 
-	return &Machine{
-		MachineRecord:  mr,
-		ProviderRecord: providerRecord,
-	}, nil
+	cmd := exec.Command("bash", "-c", c.Script)
+	cmd.Dir = pConfig.Workdir
+	cmd.Stdout = w
+	cmd.Stderr = w
+	return cmd.Run()
 }
 
 func (p *Provider) Provision(w io.Writer, machineName string) (ald.ProviderRecord, error) {

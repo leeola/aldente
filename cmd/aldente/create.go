@@ -22,10 +22,6 @@ func CreateCmd(ctx *cli.Context) error {
 		return err
 	}
 
-	if err := a.CreateGroup(group); err != nil {
-		return err
-	}
-
 	if !ctx.Bool("not-provision") {
 		if err := a.Provision(os.Stdout, group); err != nil {
 			return err
@@ -33,6 +29,10 @@ func CreateCmd(ctx *cli.Context) error {
 
 		fmt.Println("\ngroup provisioned machines:")
 	} else {
+		if err := a.CreateGroup(group); err != nil {
+			return err
+		}
+
 		fmt.Println("\ngroup created machines:")
 	}
 

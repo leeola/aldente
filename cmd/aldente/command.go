@@ -29,14 +29,5 @@ func CommandCmd(ctx *cli.Context) error {
 		return errors.New("error: missing command name")
 	}
 
-	commands, err := a.Command(os.Stdout, group, command)
-	if err != nil {
-		return err
-	}
-
-	if err := commands.Start(); err != nil {
-		return err
-	}
-
-	return commands.Wait()
+	return a.Command(os.Stdout, group, command)
 }

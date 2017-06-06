@@ -45,12 +45,12 @@ type Provider interface {
 	// implementor key, such as `"aws"`.
 	Type() string
 
-	// Machine instantiates a Machine interface for the given MachineRecord.
+	// Command runs the given commandConfig on the specified machine.
 	//
-	// The ProviderRecord allows the provider to establish a connection from
-	// the information it previously associated with the the machine when it was
-	// created.
-	Machine(MachineRecord) (Machine, error)
+	// The MachineRecord and ProviderRecord allows the provider to establish a
+	// connection from the information it previously associated with the the
+	// machine when it was created.
+	Command(io.Writer, MachineRecord, CommandConfig) error
 
 	// Provision based on the Provider implementation and configuration.
 	//
@@ -65,6 +65,28 @@ type Provider interface {
 	// The Provider is responsible for unmarshalling all of the building,
 	// provisioning etc config details needed to Provision each machine.
 	Provision(w io.Writer, machineName string) (ProviderRecord, error)
+}
+
+// MachineRecord contains information to be able to store and reconstruct a Machine.
+type MachineRecord struct {
+	// Name of the machine, as in the configuration.
+	Name string `json:"name"`
+
+	// Group name of the group that the machine belongs to.
+	Group string `json:"group"`
+
+	// Provider name of the provider that handles the machine.
+	Provider string `json:"provider"`
+
+	// ProvisionHistory records each status in order.
+	// ProvisionHistory ProvisionHistory `json:"provisionHistory"`
+
+	// ProviderRecord is provider specific data for the given record.
+	//
+	// This data is used to reconstruct machines between Aldente sessions. Eg,
+	// it may record an ip, port, key, etc to connect to. The data stored
+	// depends on the provider.
+	ProviderRecord ProviderRecord `json:"providerRecord"`
 }
 
 // ProviderRecord stores Provider data within a MachineRecord in the database.
