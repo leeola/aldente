@@ -14,15 +14,19 @@ func CommandCmd(ctx *cli.Context) error {
 		return err
 	}
 
+	if len(ctx.Args()) < 2 {
+		return errors.New("error: group and command required")
+	}
+
 	group := ctx.Args().Get(0)
 	command := ctx.Args().Get(1)
 
 	if group == "" {
-		return errors.New("missing group name")
+		return errors.New("error: missing group name")
 	}
 
 	if command == "" {
-		return errors.New("missing command name")
+		return errors.New("error: missing command name")
 	}
 
 	commands, err := a.Command(os.Stdout, group, command)
