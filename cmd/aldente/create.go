@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"os"
 
 	"github.com/leeola/aldente/autoload"
 	"github.com/urfave/cli"
@@ -26,24 +27,7 @@ func CreateCmd(ctx *cli.Context) error {
 	}
 
 	if !ctx.Bool("not-provision") {
-		// TODO(leeola): this interface is likely to change a lot,
-		// as provisioning is not yet *really* implemented, local just
-		// allocates a machine interface.
-		p, err := a.Provision(group)
-		if err != nil {
-			return err
-		}
-
-		// print the output.
-		for o := range p.Output() {
-			fmt.Printf(
-				"[%s:%s] (%s) %s\n",
-				o.MachineName, o.ProviderName,
-				o.State, o.Message,
-			)
-		}
-
-		if err := p.Wait(); err != nil {
+		if err := a.Provision(os.Stdout, group); err != nil {
 			return err
 		}
 

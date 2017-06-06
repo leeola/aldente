@@ -1,6 +1,33 @@
 package aldente
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"io"
+)
+
+type ProvisionState int
+
+const (
+	Unknown ProvisionState = iota
+	// Building and Built are not implemented in Aldente yet.
+	//
+	// // Building allows an image to be constructed for the creating state.
+	// //
+	// // They're positioned in front of creating/created, due to VMs/etc being
+	// // based off of an image. Building constructs that image.
+	// //
+	// // This works for Docker style images too, and would allow a builder
+	// // to construct a dockerfile based on the build instructions. The dockerfile
+	// // may or may not contain step based caching, depending on the builder
+	// // implementation.
+	// // Building
+	// // Built
+	Creating
+	Created
+	Provisioning
+	Provisioned
+	Failed
+)
 
 // Provider is responsible for creating machines.
 //
@@ -37,7 +64,7 @@ type Provider interface {
 	//
 	// The Provider is responsible for unmarshalling all of the building,
 	// provisioning etc config details needed to Provision each machine.
-	Provision(machineName string) (Provisioner, error)
+	Provision(w io.Writer, machineName string) (ProviderRecord, error)
 }
 
 // ProviderRecord stores Provider data within a MachineRecord in the database.
@@ -45,3 +72,22 @@ type Provider interface {
 // This raw json allows the Provider to instatiate Machine interfaces for a
 // specific machine at any time.
 type ProviderRecord json.RawMessage
+
+func (p ProvisionState) String() string {
+	switch p {
+	case Unknown:
+		return "Unknown"
+	case Creating:
+		return "Creating"
+	case Created:
+		return "Created"
+	case Provisioning:
+		return "Provisioning"
+	case Provisioned:
+		return "Provisioned"
+	case Failed:
+		return "Failed"
+	default:
+		return "unhandled provision state"
+	}
+}

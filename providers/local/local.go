@@ -2,6 +2,8 @@ package local
 
 import (
 	"encoding/json"
+	"fmt"
+	"io"
 
 	ald "github.com/leeola/aldente"
 	"github.com/leeola/errors"
@@ -10,9 +12,12 @@ import (
 const ProviderType = "local"
 
 type ProviderConfig struct {
-	Name             string            `toml:"name"`
-	Workdir          string            `toml:"workdir"`
-	ProvisionConfigs []ProvisionConfig `toml:"-"`
+	Name             string            `toml:"name" json:"-"`
+	Workdir          string            `toml:"workdir" json:"workdir"`
+	ProvisionConfigs []ProvisionConfig `toml:"-" json:"-"`
+}
+
+type ProvisionConfig struct {
 }
 
 type Provider struct {
@@ -53,6 +58,14 @@ func (p *Provider) Machine(mr ald.MachineRecord) (ald.Machine, error) {
 	}, nil
 }
 
-func (p *Provider) Provision(machineName string) (ald.Provisioner, error) {
-	return NewProvision(machineName, p.config, p.config.ProvisionConfigs)
+func (p *Provider) Provision(w io.Writer, machineName string) (ald.ProviderRecord, error) {
+	j, err := json.Marshal(p.config)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Fprintln(w, "local machine provisioned")
+
+	return ald.ProviderRecord(j), nil
+
 }

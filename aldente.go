@@ -168,37 +168,43 @@ func (a *Aldente) Providers() []Provider {
 	return providers
 }
 
-func (a *Aldente) provisionMachine(mr MachineRecord) (Provisioner, error) {
-	provider, ok := a.providers[mr.Provider]
+func (a *Aldente) provisionMachine(w io.Writer, mRecord MachineRecord) error {
+	provider, ok := a.providers[mRecord.Provider]
 	if !ok {
-		return nil, errors.Errorf("implementation not found for provider: %s", mr.Provider)
+		return errors.Errorf("implementation not found for provider: %s", mRecord.Provider)
 	}
 
-	provisioner, err := provider.Provision(mr.Name)
+	pRecord, err := provider.Provision(w, mRecord.Name)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return NewDbProvisioner(a.db, mr, provisioner), nil
+	mRecord.ProviderRecord = pRecord
+	if err := a.db.UpdateMachine(mRecord); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Provision machine(s) for the given group.
-func (a *Aldente) Provision(group string) (Provisioners, error) {
+func (a *Aldente) Provision(w io.Writer, group string) error {
 	mrs, err := a.db.GroupMachines(group)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	ps := make([]Provisioner, len(mrs))
-	for i, mr := range mrs {
-		p, err := a.provisionMachine(mr)
-		if err != nil {
-			return nil, err
+	var errs []error
+	for _, mr := range mrs {
+		// TODO(leeola): run these concurrently.
+		if err := a.provisionMachine(w, mr); err != nil {
+			// TODO(leeola): return a custom error object with the machine name and
+			// provider included in the message and in the struct.
+			errs = append(errs, err)
 		}
-		ps[i] = p
 	}
 
-	return ps, nil
+	return errors.JoinSep(errs, "\n")
 }
 
 func findMachineRecord(mrs []MachineRecord, machineName string) (MachineRecord, bool) {
