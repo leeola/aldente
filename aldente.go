@@ -112,7 +112,13 @@ func (a *Aldente) Command(w io.Writer, group, commandName string) (Commands, err
 	}
 
 	commands := make(Commands, totalMachines)
-	for i, mr := range machineRecords {
+	for i, machineName := range commandConfig.Machines {
+		mr, ok := findMachineRecord(machineRecords, machineName)
+		if !ok {
+			return nil, errors.Errorf(
+				"command configuration not found in machine record: %s", machineName)
+		}
+
 		p, ok := a.providers[mr.Provider]
 		if !ok {
 			return nil, errors.Errorf("recorded machine provider not configured: %s",
@@ -193,4 +199,13 @@ func (a *Aldente) Provision(group string) (Provisioners, error) {
 	}
 
 	return ps, nil
+}
+
+func findMachineRecord(mrs []MachineRecord, machineName string) (MachineRecord, bool) {
+	for _, mr := range mrs {
+		if mr.Name == machineName {
+			return mr, true
+		}
+	}
+	return MachineRecord{}, false
 }
