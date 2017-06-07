@@ -1,0 +1,20 @@
+[[provider]]
+name = "local"
+type = "local"
+workdir = "./_examples/tmp/provision"
+
+[[machine]]
+name = "build machine"
+provider = "local"
+
+
+[[provision]]
+machine = "build machine"
+script = """
+"""
+
+
+[marshalDatabase]
+Path = "_examples/tmp/provision.db"
+
+# kak: filetype=ini

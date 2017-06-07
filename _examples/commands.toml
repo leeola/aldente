@@ -55,6 +55,6 @@ ls -la
 # eg, a database. This configuration can specify any of the supported databases,
 # to store basic data like groups created, ips of created machines, auth, etc.
 [marshalDatabase]
-Path = "_examples/.commands.db"
+Path = "_examples/tmp/commands.db"
 
 # kak: filetype=ini
