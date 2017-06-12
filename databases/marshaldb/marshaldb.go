@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"os"
+	"path/filepath"
 
 	ald "github.com/leeola/aldente"
 	"github.com/leeola/errors"
@@ -23,6 +24,14 @@ type MarshalDb struct {
 }
 
 func New(c Config) (*MarshalDb, error) {
+	if c.Path == "" {
+		return nil, errors.New("missing required config: Path")
+	}
+
+	if err := os.MkdirAll(filepath.Dir(db.config.Path), 0755); err != nil {
+		return nil, err
+	}
+
 	return &MarshalDb{
 		config: c,
 	}, nil
