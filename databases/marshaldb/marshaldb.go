@@ -28,7 +28,7 @@ func New(c Config) (*MarshalDb, error) {
 		return nil, errors.New("missing required config: Path")
 	}
 
-	if err := os.MkdirAll(filepath.Dir(db.config.Path), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(c.Path), 0755); err != nil {
 		return nil, err
 	}
 
