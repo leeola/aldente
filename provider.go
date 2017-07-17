@@ -52,6 +52,8 @@ type Provider interface {
 	// machine when it was created.
 	Command(io.Writer, MachineRecord, CommandConfig) error
 
+	Machine(MachineRecord) (Machine, error)
+
 	// Provision based on the Provider implementation and configuration.
 	//
 	// Configuration is done via the toml config. Eg, if you want a large aws
