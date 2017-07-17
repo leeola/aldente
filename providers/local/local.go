@@ -61,10 +61,6 @@ func (p *Provider) Command(w io.Writer, r ald.MachineRecord, c ald.CommandConfig
 	return cmd.Run()
 }
 
-func (p *Provider) Machine(r ald.MachineRecord) (ald.Machine, error) {
-	return nil, errors.New("not implemented")
-}
-
 func (p *Provider) Provision(w io.Writer, machineName string) (ald.ProviderRecord, error) {
 	j, err := json.Marshal(p.config)
 	if err != nil {
