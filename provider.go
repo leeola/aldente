@@ -1,9 +1,5 @@
 package aldente
 
-import (
-	"io"
-)
-
 type ProvisionState int
 
 const (
@@ -32,6 +28,25 @@ const (
 //
 // This may be on the cloud, local vmware, docker, etc.
 type Provider interface {
+	// Create the given machine from the loaded config.
+	//
+	// The provided Group and Machine name can optionally be used by the
+	// provider to identify the created machine.
+	//
+	// The returned channel can communicate progress, as well as communicate
+	// the final value. The last value of the channel must contain the
+	// ProviderRecord or Error for the operation.
+	// See CreateOutput for further documentation on CreateOutput behavior.
+	//
+	// NOTE: The returned channel has implicit behavior because it fans into
+	// the Provision channels. Provider is a lower level implementation behind
+	// motley.
+	Create(groupName, machineName string) <-chan CreateOutput
+
+	// Machine return an interface for the requested Machine.
+	//
+	// Machine(ProviderRecord) (Machine, error)
+
 	// Name returns the configurable Name for this provider.
 	//
 	// Eg, you could have three providers for the type AWS which create different
@@ -43,27 +58,27 @@ type Provider interface {
 	// If Name() returns the dynamic name such as large-aws, Type() returns the
 	// implementor key, such as `"aws"`.
 	Type() string
+}
 
-	// Command runs the given commandConfig on the specified machine.
-	//
-	// The MachineRecord and ProviderRecord allows the provider to establish a
-	// connection from the information it previously associated with the the
-	// machine when it was created.
-	Command(io.Writer, MachineRecord, CommandConfig) error
+// type Machine interface {
+//   Exec(machineName string) (chan -> ExecOutput)
+//   Close() error
+// }
 
-	// Provision based on the Provider implementation and configuration.
-	//
-	// Configuration is done via the toml config. Eg, if you want a large aws
-	// instance the aws provider will be configured to use a large instance, and
-	// the name of the provider will reflect that it creates a large aws instance.
-	//
-	// The actual provisioning steps, such as each ordered set of bash scripts
-	// found in the `[[provisions]]` key, is again configured via the toml file
-	// and upon Provider creation
-	//
-	// The Provider is responsible for unmarshalling all of the building,
-	// provisioning etc config details needed to Provision each machine.
-	Provision(w io.Writer, machineName string) (ProviderRecord, error)
+type CreateOutput struct {
+	Line           string
+	ProviderRecord ProviderRecord
+	Error          error
+}
+
+type ExecOutput struct {
+	Line  string
+	Error error
+}
+
+type ProvisionOutput struct {
+	Line  string
+	State ProvisionState
 }
 
 func (p ProvisionState) String() string {
