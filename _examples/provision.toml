@@ -13,6 +13,14 @@ machine = "build machine"
 script = """
 """
 
+[[resource]]
+machine = "build machine"
+path = "/opt/motly/resources/hash"
+script = """
+"""
+
+[[provision]]
+
 
 [marshalDatabase]
 Path = "_examples/tmp/provision.db"
