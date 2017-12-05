@@ -1,0 +1,10 @@
+[[architecture]]
+machine = "local"
+connection = "local"
+
+
+[[machine]]
+group = "default"
+
+
+# kak: filetype=ini
