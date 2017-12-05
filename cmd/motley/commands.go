@@ -6,7 +6,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/leeola/aldente/autoload"
+	"github.com/leeola/motley/autoload"
 	"github.com/urfave/cli"
 )
 

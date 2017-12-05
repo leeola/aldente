@@ -6,7 +6,7 @@ import (
 	"os"
 	"text/tabwriter"
 
-	"github.com/leeola/aldente/autoload"
+	"github.com/leeola/motley/autoload"
 	"github.com/urfave/cli"
 )
 
@@ -14,7 +14,7 @@ func ProvidersCmd(ctx *cli.Context) error {
 	configPaths := ctx.GlobalStringSlice("config")
 
 	if len(configPaths) <= 0 {
-		return errors.New("error: at least one aldente config is required")
+		return errors.New("error: at least one motley config is required")
 	}
 
 	a, err := autoload.LoadAldente(configPaths)

@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/BurntSushi/toml"
-	"github.com/leeola/aldente"
+	"github.com/leeola/motley"
 	"github.com/leeola/errors"
 )
 
@@ -33,7 +33,7 @@ func (p *Provider) Type() string {
 	return ProviderType
 }
 
-func (p *Provider) NewMachine(string) (aldente.Machine, error) {
+func (p *Provider) NewMachine(string) (motley.Machine, error) {
 	return nil, errors.New("not implemented")
 }
 

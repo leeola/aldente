@@ -3,7 +3,7 @@ package util
 import (
 	"io"
 
-	"github.com/leeola/aldente/fmtio"
+	"github.com/leeola/motley/fmtio"
 )
 
 type nopFlusher struct {

@@ -1,4 +1,4 @@
-package aldente
+package motley
 
 import (
 	"io"
@@ -6,7 +6,7 @@ import (
 	"github.com/leeola/errors"
 )
 
-// TODO(leeola): Pretty much all of the commands in the aldente package spec should
+// TODO(leeola): Pretty much all of the commands in the motley package spec should
 // contain context and/or channel(s) to cancel long running operations. They're
 // being omitted for simplicity during prototyping/PoC.
 //

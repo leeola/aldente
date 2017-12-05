@@ -1,4 +1,4 @@
-package aldente
+package motley
 
 // MachineConfig is configuration for machines from config files.
 //

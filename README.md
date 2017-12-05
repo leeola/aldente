@@ -1,8 +1,8 @@
 
-# Aldente (experimental)
+# Motley (experimental)
 
-An experimental tool to deployments and multi-machine management less
-mushy.
+An experimental non-opinionated tool to simplify a motley of deployment
+and multi-machine management needs.
 
 # License
 

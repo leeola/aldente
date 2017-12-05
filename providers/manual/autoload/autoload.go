@@ -1,10 +1,10 @@
 package autoload
 
 import (
-	ald "github.com/leeola/aldente"
-	"github.com/leeola/aldente/autoload"
-	provider "github.com/leeola/aldente/providers/manual"
-	cu "github.com/leeola/aldente/util/configunmarshaller"
+	ald "github.com/leeola/motley"
+	"github.com/leeola/motley/autoload"
+	provider "github.com/leeola/motley/providers/manual"
+	cu "github.com/leeola/motley/util/configunmarshaller"
 )
 
 func init() {

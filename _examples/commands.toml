@@ -6,7 +6,7 @@
 name = "repo provider"
 
 # The type of the provider identifies the actual code that will be implementing
-# this provider. Run `aldente providers --registered` to see the specific
+# this provider. Run `motley providers --registered` to see the specific
 # providers that are available currently.
 type = "local"
 
@@ -22,7 +22,7 @@ workdir = "./_examples"
 #
 # Note that all configuration of the specific machine is done by the provider
 # configuration. This machine section just describes machines within your
-# deployment stack, or machine group in aldente terms.
+# deployment stack, or machine group in motley terms.
 [[machine]]
 name = "repo"
 provider = "repo provider"
@@ -51,7 +51,7 @@ ls -la
 
 
 
-# Finally, aldente requires some mechanism to persist information about machines,
+# Finally, motley requires some mechanism to persist information about machines,
 # eg, a database. This configuration can specify any of the supported databases,
 # to store basic data like groups created, ips of created machines, auth, etc.
 [marshalDatabase]

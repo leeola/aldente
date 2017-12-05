@@ -1,11 +1,11 @@
 package regloader
 
 import (
-	ald "github.com/leeola/aldente"
-	"github.com/leeola/aldente/autoload/registry"
-	"github.com/leeola/aldente/providers/local"
-	"github.com/leeola/aldente/util"
-	cu "github.com/leeola/aldente/util/configunmarshaller"
+	ald "github.com/leeola/motley"
+	"github.com/leeola/motley/autoload/registry"
+	"github.com/leeola/motley/providers/local"
+	"github.com/leeola/motley/util"
+	cu "github.com/leeola/motley/util/configunmarshaller"
 )
 
 func init() {

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/leeola/aldente/autoload"
+	"github.com/leeola/motley/autoload"
 	"github.com/urfave/cli"
 )
 
@@ -14,7 +14,7 @@ func CreateCmd(ctx *cli.Context) error {
 	group := ctx.Args().First()
 
 	if len(configPaths) <= 0 {
-		return errors.New("error: at least one aldente config is required")
+		return errors.New("error: at least one motley config is required")
 	}
 
 	a, err := autoload.LoadAldente(configPaths)

@@ -1,16 +1,16 @@
 package autoload
 
 import (
-	"github.com/leeola/aldente"
-	"github.com/leeola/aldente/autoload"
-	"github.com/leeola/aldente/providers/dockermachine"
+	"github.com/leeola/motley"
+	"github.com/leeola/motley/autoload"
+	"github.com/leeola/motley/providers/dockermachine"
 )
 
 func init() {
 	autoload.RegisterLoader(autoLoader)
 }
 
-func autoLoader(configPaths []string, a *aldente.Aldente) error {
+func autoLoader(configPaths []string, a *motley.Aldente) error {
 	// TODO(leeola): load multiple configs
 	ps, err := dockermachine.FromConfig(configPaths[0])
 	if err != nil {

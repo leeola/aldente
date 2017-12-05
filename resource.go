@@ -1,4 +1,4 @@
-package aldente
+package motley
 
 // Resource defines a filesystem resource to be created and copied to a machine.
 //

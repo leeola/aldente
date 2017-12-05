@@ -1,4 +1,4 @@
-package aldente
+package motley
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 // Database implements a basic backend for Aldente to write data to.
 //
 // Aldente uses this to keep track of which machines were created and managed by
-// aldente session.
+// motley session.
 type Database interface {
 	// Groups lists the created groups in the database.
 	Groups() ([]string, error)

@@ -8,8 +8,8 @@ import (
 	"text/tabwriter"
 
 	"github.com/bradfitz/slice"
-	ald "github.com/leeola/aldente"
-	"github.com/leeola/aldente/autoload"
+	ald "github.com/leeola/motley"
+	"github.com/leeola/motley/autoload"
 	"github.com/urfave/cli"
 )
 
@@ -17,7 +17,7 @@ func ListCmd(ctx *cli.Context) error {
 	configPaths := ctx.GlobalStringSlice("config")
 
 	if len(configPaths) <= 0 {
-		return errors.New("error: at least one aldente config is required")
+		return errors.New("error: at least one motley config is required")
 	}
 
 	a, err := autoload.LoadAldente(configPaths)

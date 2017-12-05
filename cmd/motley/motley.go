@@ -10,7 +10,7 @@ import (
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "aldente"
+	app.Name = "motley"
 	app.Usage = "less mushy spaghetti deployments"
 	app.Flags = []cli.Flag{
 		cli.StringSliceFlag{

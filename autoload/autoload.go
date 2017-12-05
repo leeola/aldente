@@ -1,11 +1,11 @@
 package autoload
 
 import (
-	ald "github.com/leeola/aldente"
+	ald "github.com/leeola/motley"
 
-	"github.com/leeola/aldente/autoload/registry"
-	_ "github.com/leeola/aldente/databases/marshaldb/regloader"
-	_ "github.com/leeola/aldente/providers/local/regloader"
+	"github.com/leeola/motley/autoload/registry"
+	_ "github.com/leeola/motley/databases/marshaldb/regloader"
+	_ "github.com/leeola/motley/providers/local/regloader"
 )
 
 func LoadAldente(configPaths []string) (*ald.Aldente, error) {

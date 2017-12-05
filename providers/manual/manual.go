@@ -1,8 +1,8 @@
 package manual
 
 import (
-	ald "github.com/leeola/aldente"
-	cu "github.com/leeola/aldente/util/configunmarshaller"
+	ald "github.com/leeola/motley"
+	cu "github.com/leeola/motley/util/configunmarshaller"
 	"github.com/leeola/errors"
 )
 
