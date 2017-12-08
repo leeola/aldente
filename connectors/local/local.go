@@ -1,74 +1,75 @@
 package local
 
-import (
-	"encoding/json"
-	"fmt"
-	"io"
-	"os/exec"
+import "github.com/leeola/motley"
 
-	ald "github.com/leeola/motley"
-	"github.com/leeola/errors"
-)
+const ConnectorType = "local"
 
-const ProviderType = "local"
-
-type ProviderConfig struct {
-	Name             string            `toml:"name" json:"-"`
-	Workdir          string            `toml:"workdir" json:"workdir"`
-	ProvisionConfigs []ProvisionConfig `toml:"-" json:"-"`
+type Config struct {
+	Name    string `toml:"name" json:"-"`
+	Workdir string `toml:"workdir" json:"workdir"`
 }
 
-type ProvisionConfig struct {
+type Connector struct {
+	config Config
 }
 
-type Provider struct {
-	config ProviderConfig
-}
-
-func New(c ProviderConfig) (*Provider, error) {
-	return &Provider{
+func New(c Config) (*Connector, error) {
+	return &Connector{
 		config: c,
 	}, nil
 }
 
-func (p *Provider) Name() string {
+func (p *Connector) Name() string {
 	return p.config.Name
 }
 
-func (p *Provider) Type() string {
-	return ProviderType
+func (p *Connector) Type() string {
+	return ConnectorType
 }
 
-func (p *Provider) Command(w io.Writer, r ald.MachineRecord, c ald.CommandConfig) error {
-	// TODO(leeola): Convert to use the eventual r.History.Last() state.
-	if len(r.ProviderRecord) == 0 {
-		return errors.New("machine not provisioned")
-	}
-
-	// the stored providerconfig *should* be the same as the current
-	// ProviderConfig, but if the user changed a value in it then we want
-	// the machine to always use the same settings. So, we unmarshal what
-	// was stored.
-	var pConfig ProviderConfig
-	if err := json.Unmarshal(r.ProviderRecord, &pConfig); err != nil {
-		return err
-	}
-
-	cmd := exec.Command("bash", "-c", c.Script)
-	cmd.Dir = pConfig.Workdir
-	cmd.Stdout = w
-	cmd.Stderr = w
-	return cmd.Run()
+func (p *Connector) Machine() (motley.Machine, error) {
+	return p, nil
 }
 
-func (p *Provider) Provision(w io.Writer, machineName string) (ald.ProviderRecord, error) {
-	j, err := json.Marshal(p.config)
-	if err != nil {
-		return nil, err
-	}
-
-	fmt.Fprintln(w, "local machine provisioned")
-
-	return ald.ProviderRecord(j), nil
-
+func (p *Connector) Status() error {
+	return nil
 }
+
+// Close is a noop for the local Connector
+func (p *Connector) Close() error {
+	return nil
+}
+
+// func (p *Connector) Command(w io.Writer, r ald.MachineRecord, c ald.CommandConfig) error {
+// 	// TODO(leeola): Convert to use the eventual r.History.Last() state.
+// 	if len(r.ProviderRecord) == 0 {
+// 		return errors.New("machine not provisioned")
+// 	}
+//
+// 	// the stored providerconfig *should* be the same as the current
+// 	// ProviderConfig, but if the user changed a value in it then we want
+// 	// the machine to always use the same settings. So, we unmarshal what
+// 	// was stored.
+// 	var pConfig ConnectorConfig
+// 	if err := json.Unmarshal(r.ProviderRecord, &pConfig); err != nil {
+// 		return err
+// 	}
+//
+// 	cmd := exec.Command("bash", "-c", c.Script)
+// 	cmd.Dir = pConfig.Workdir
+// 	cmd.Stdout = w
+// 	cmd.Stderr = w
+// 	return cmd.Run()
+// }
+//
+// func (p *Connector) Provision(w io.Writer, machineName string) (ald.ProviderRecord, error) {
+// 	j, err := json.Marshal(p.config)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+//
+// 	fmt.Fprintln(w, "local machine provisioned")
+//
+// 	return ald.ProviderRecord(j), nil
+//
+// }

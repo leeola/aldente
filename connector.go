@@ -7,7 +7,7 @@ type Connector interface {
 
 type Machine interface {
 	Status() error
-	Exec(machineName string) chan ExecOutput
+	// Exec(machineName string) chan ExecOutput
 	Close() error
 }
 
