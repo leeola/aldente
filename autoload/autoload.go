@@ -8,6 +8,6 @@ import (
 	// _ "github.com/leeola/motley/providers/local/regloader"
 )
 
-func LoadAldente(configPaths []string) (motley.Motley, error) {
+func Motley(configPaths []string) (motley.Motley, error) {
 	return registry.LoadAldente(configPaths)
 }

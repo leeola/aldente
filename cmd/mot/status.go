@@ -6,7 +6,7 @@ import (
 )
 
 func StatusCmd(ctx *cli.Context) error {
-	_, err := autoload.LoadAldente(ctx.GlobalStringSlice("config"))
+	_, err := autoload.Motley(ctx.GlobalStringSlice("config"))
 	if err != nil {
 		return err
 	}
