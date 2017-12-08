@@ -9,4 +9,8 @@ name = "examples"
 group = "default"
 
 
+[marshalDatabase]
+Path = "_examples/tmp/01_architecture.db"
+
+
 # kak: filetype=ini
