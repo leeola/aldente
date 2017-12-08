@@ -28,6 +28,16 @@ type ProviderLoader func(cu.ConfigUnmarshaller) ([]motley.Provider, error)
 type ConnectorLoader func(cu.ConfigUnmarshaller) ([]motley.Connector, error)
 type DatabaseLoader func(cu.ConfigUnmarshaller) (motley.Database, error)
 
+func MustRegisterConnector(l ConnectorLoader) error {
+	if connectorLoaders == nil {
+		panic("connectors already loaded")
+	}
+
+	connectorLoaders = append(connectorLoaders, l)
+
+	return nil
+}
+
 func MustRegisterProvider(l ProviderLoader) error {
 	if providerLoaders == nil {
 		panic("providers already loaded")

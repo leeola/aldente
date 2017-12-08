@@ -5,8 +5,7 @@ import "github.com/leeola/motley"
 const ConnectorType = "local"
 
 type Config struct {
-	Name    string `toml:"name" json:"-"`
-	Workdir string `toml:"workdir" json:"workdir"`
+	Name string `toml:"name" json:"-"`
 }
 
 type Connector struct {

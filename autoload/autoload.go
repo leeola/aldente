@@ -5,7 +5,7 @@ import (
 
 	"github.com/leeola/motley/autoload/registry"
 	// _ "github.com/leeola/motley/databases/marshaldb/regloader"
-	// _ "github.com/leeola/motley/providers/local/regloader"
+	_ "github.com/leeola/motley/connectors/local/regloader"
 )
 
 func Motley(configPaths []string) (motley.Motley, error) {

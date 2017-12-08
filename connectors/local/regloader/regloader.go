@@ -3,46 +3,45 @@ package regloader
 import (
 	ald "github.com/leeola/motley"
 	"github.com/leeola/motley/autoload/registry"
-	"github.com/leeola/motley/providers/local"
-	"github.com/leeola/motley/util"
+	"github.com/leeola/motley/connectors/local"
 	cu "github.com/leeola/motley/util/configunmarshaller"
 )
 
 func init() {
-	registry.MustRegisterProvider(Loader)
+	registry.MustRegisterConnector(Loader)
 }
 
-func Loader(cu cu.ConfigUnmarshaller) ([]ald.Provider, error) {
+func Loader(cu cu.ConfigUnmarshaller) ([]ald.Connector, error) {
 	var rootC struct {
-		DontExpandHome  bool `toml:"dontExpandHome"`
-		ProviderConfigs []struct {
-			local.ProviderConfig
-			DontExpandHome *bool  `toml:"dontExpandHome"`
-			Type           string `toml:"type"`
-		} `toml:"provider"`
-		ProvisionConfigs []local.ProvisionConfig `toml:"provision"`
+		DontExpandHome   bool `toml:"dontExpandHome"`
+		ConnectorConfigs []struct {
+			local.Config
+			// DontExpandHome *bool  `toml:"dontExpandHome"`
+			Type string `toml:"type"`
+		} `toml:"connection"`
 	}
 
 	if err := cu.Unmarshal(&rootC); err != nil {
 		return nil, err
 	}
 
-	var ps []ald.Provider
+	var cs []ald.Connector
+
 	// create local providers for each of the configured providers
-	for _, c := range rootC.ProviderConfigs {
-		if c.Type != local.ProviderType {
+	for _, c := range rootC.ConnectorConfigs {
+		if c.Type != local.ConnectorType {
 			continue
 		}
 
-		c.Workdir = util.HomeExpander(c.Workdir, rootC.DontExpandHome, c.DontExpandHome)
+		// c.Workdir = util.HomeExpander(c.Workdir, rootC.DontExpandHome, c.DontExpandHome)
 
-		p, err := local.New(c.ProviderConfig)
+		conn, err := local.New(c.Config)
 		if err != nil {
 			return nil, err
 		}
 
-		ps = append(ps, p)
+		cs = append(cs, conn)
 	}
 
-	return ps, nil
+	return cs, nil
 }
