@@ -1,9 +1,11 @@
 [[architecture]]
-machine = "local"
+machine = "examples"
 connection = "local"
+workdir = "./_examples"
 
 
 [[machine]]
+name = "examples"
 group = "default"
 
 

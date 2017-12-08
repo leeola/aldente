@@ -3,26 +3,30 @@ package registry
 import (
 	"errors"
 
-	ald "github.com/leeola/motley"
+	"github.com/leeola/motley"
+	"github.com/leeola/motley/motley/embed"
 	cu "github.com/leeola/motley/util/configunmarshaller"
 )
 
 var (
 	// If the loaders are nil, loaders have already been produced and the
 	// the slices have had their memory freed.
-	providerLoaders []ProviderLoader
-	databaseLoaders []DatabaseLoader
+	providerLoaders  []ProviderLoader
+	connectorLoaders []ConnectorLoader
+	databaseLoaders  []DatabaseLoader
 )
 
 func init() {
 	// init the loaders so they're not nil. Nil loader slice represents a freed
 	// slice of loaders.
 	providerLoaders = []ProviderLoader{}
+	connectorLoaders = []ConnectorLoader{}
 	databaseLoaders = []DatabaseLoader{}
 }
 
-type ProviderLoader func(cu.ConfigUnmarshaller) ([]ald.Provider, error)
-type DatabaseLoader func(cu.ConfigUnmarshaller) (ald.Database, error)
+type ProviderLoader func(cu.ConfigUnmarshaller) ([]motley.Provider, error)
+type ConnectorLoader func(cu.ConfigUnmarshaller) ([]motley.Connector, error)
+type DatabaseLoader func(cu.ConfigUnmarshaller) (motley.Database, error)
 
 func MustRegisterProvider(l ProviderLoader) error {
 	if providerLoaders == nil {
@@ -47,7 +51,7 @@ func MustRegisterDatabase(l DatabaseLoader) error {
 // LoadFixity from the given configunmarshaller.
 //
 // Note that LoadFixity purges the registered fixities if successful.
-func LoadAldente(configPaths []string) (*ald.Aldente, error) {
+func LoadAldente(configPaths []string) (motley.Motley, error) {
 	if len(configPaths) == 0 {
 		return nil, errors.New("a configPath is required")
 	}
@@ -64,25 +68,25 @@ func LoadAldente(configPaths []string) (*ald.Aldente, error) {
 	}
 
 	var conf struct {
-		Machines []ald.MachineConfig `toml:"machine"`
-		Commands []ald.CommandConfig `toml:"command"`
+		Machines []motley.MachineConfig `toml:"machine"`
+		Commands []motley.CommandConfig `toml:"command"`
 	}
 	if err := cu.Unmarshal(&conf); err != nil {
 		return nil, err
 	}
 
-	aConf := ald.Config{
-		ConfigPaths:    configPaths,
-		Db:             db,
-		Providers:      p,
-		MachineConfigs: conf.Machines,
-		CommandConfigs: conf.Commands,
+	eConf := embed.Config{
+		// ConfigPaths:    configPaths,
+		DB:        db,
+		Providers: p,
+		// MachineConfigs: conf.Machines,
+		// CommandConfigs: conf.Commands,
 	}
-	return ald.New(aConf)
+	return embed.New(eConf)
 }
 
-func LoadDatabase(cu cu.ConfigUnmarshaller) (ald.Database, error) {
-	var dbs []ald.Database
+func LoadDatabase(cu cu.ConfigUnmarshaller) (motley.Database, error) {
+	var dbs []motley.Database
 	for _, l := range databaseLoaders {
 		db, err := l(cu)
 		if err != nil {
@@ -103,8 +107,8 @@ func LoadDatabase(cu cu.ConfigUnmarshaller) (ald.Database, error) {
 	return dbs[0], nil
 }
 
-func LoadProviders(cu cu.ConfigUnmarshaller) ([]ald.Provider, error) {
-	var ps []ald.Provider
+func LoadProviders(cu cu.ConfigUnmarshaller) ([]motley.Provider, error) {
+	var ps []motley.Provider
 	for _, l := range providerLoaders {
 		p, err := l(cu)
 		if err != nil {

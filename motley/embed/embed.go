@@ -58,3 +58,7 @@ func New(c Config) (*Motley, error) {
 		connectors: connectorsMap,
 	}, nil
 }
+
+func (m *Motley) Status(string) error {
+	return nil
+}

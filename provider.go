@@ -28,20 +28,20 @@ const (
 //
 // This may be on the cloud, local vmware, docker, etc.
 type Provider interface {
-	// Create the given machine from the loaded config.
-	//
-	// The provided Group and Machine name can optionally be used by the
-	// provider to identify the created machine.
-	//
-	// The returned channel can communicate progress, as well as communicate
-	// the final value. The last value of the channel must contain the
-	// ProviderRecord or Error for the operation.
-	// See CreateOutput for further documentation on CreateOutput behavior.
-	//
-	// NOTE: The returned channel has implicit behavior because it fans into
-	// the Provision channels. Provider is a lower level implementation behind
-	// motley.
-	Create(groupName, machineName string) <-chan CreateOutput
+	// // Create the given machine from the loaded config.
+	// //
+	// // The provided Group and Machine name can optionally be used by the
+	// // provider to identify the created machine.
+	// //
+	// // The returned channel can communicate progress, as well as communicate
+	// // the final value. The last value of the channel must contain the
+	// // ProviderRecord or Error for the operation.
+	// // See CreateOutput for further documentation on CreateOutput behavior.
+	// //
+	// // NOTE: The returned channel has implicit behavior because it fans into
+	// // the Provision channels. Provider is a lower level implementation behind
+	// // motley.
+	// Create(groupName, machineName string) <-chan CreateOutput
 
 	// Machine return an interface for the requested Machine.
 	//
@@ -60,20 +60,10 @@ type Provider interface {
 	Type() string
 }
 
-// type Machine interface {
-//   Exec(machineName string) (chan -> ExecOutput)
-//   Close() error
-// }
-
 type CreateOutput struct {
 	Line           string
 	ProviderRecord ProviderRecord
 	Error          error
-}
-
-type ExecOutput struct {
-	Line  string
-	Error error
 }
 
 type ProvisionOutput struct {
