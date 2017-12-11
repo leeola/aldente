@@ -25,10 +25,6 @@ func New(c Config) (*Motley, error) {
 		return nil, errors.New("missing required config: DB")
 	}
 
-	if len(c.Providers) == 0 {
-		return nil, errors.New("missing required config: Providers")
-	}
-
 	providersMap := map[string]motley.Provider{}
 	for _, p := range c.Providers {
 		n := p.Name()
@@ -45,7 +41,7 @@ func New(c Config) (*Motley, error) {
 		n := p.Name()
 
 		if _, exists := providersMap[n]; exists {
-			return nil, errors.New("duplicate provider name configured")
+			return nil, errors.New("duplicate connector name configured")
 		}
 
 		connectorsMap[n] = p

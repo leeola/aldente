@@ -2,8 +2,10 @@ package registry
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/leeola/motley"
+	"github.com/leeola/motley/connectors/local"
 	"github.com/leeola/motley/motley/embed"
 	cu "github.com/leeola/motley/util/configunmarshaller"
 )
@@ -77,6 +79,11 @@ func LoadAldente(configPaths []string) (motley.Motley, error) {
 		return nil, err
 	}
 
+	conns, err := LoadConnectors(cu)
+	if err != nil {
+		return nil, err
+	}
+
 	var conf struct {
 		Machines []motley.MachineConfig `toml:"machine"`
 		Commands []motley.CommandConfig `toml:"command"`
@@ -87,8 +94,9 @@ func LoadAldente(configPaths []string) (motley.Motley, error) {
 
 	eConf := embed.Config{
 		// ConfigPaths:    configPaths,
-		DB:        db,
-		Providers: p,
+		DB:         db,
+		Providers:  p,
+		Connectors: conns,
 		// MachineConfigs: conf.Machines,
 		// CommandConfigs: conf.Commands,
 	}
@@ -129,4 +137,41 @@ func LoadProviders(cu cu.ConfigUnmarshaller) ([]motley.Provider, error) {
 	}
 
 	return ps, nil
+}
+
+func LoadConnectors(cu cu.ConfigUnmarshaller) ([]motley.Connector, error) {
+	var (
+		conns    []motley.Connector
+		hasLocal bool
+	)
+	for _, l := range connectorLoaders {
+		loadedConns, err := l(cu)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, loadedConn := range loadedConns {
+			if loadedConn.Name() == "local" {
+				hasLocal = true
+			}
+		}
+
+		conns = append(conns, loadedConns...)
+	}
+
+	// As one of the few convience "magic" features, lets always give
+	// Motley a local connector, so it can be available even if
+	// unconfigured.
+	//
+	// Useful for local builds, etc.
+	if !hasLocal {
+		conn, err := local.New(local.Config{Name: "local"})
+		if err != nil {
+			return nil, fmt.Errorf("loadconnectors: magic local connector: %s", err)
+		}
+
+		conns = append(conns, conn)
+	}
+
+	return conns, nil
 }
