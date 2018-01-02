@@ -86,7 +86,7 @@ func LoadAldente(configPaths []string) (motley.Motley, error) {
 
 	var conf struct {
 		Machines []motley.MachineConfig `toml:"machine"`
-		Commands []motley.CommandConfig `toml:"command"`
+		// Commands []motley.CommandConfig `toml:"command"`
 	}
 	if err := cu.Unmarshal(&conf); err != nil {
 		return nil, err
@@ -94,10 +94,10 @@ func LoadAldente(configPaths []string) (motley.Motley, error) {
 
 	eConf := embed.Config{
 		// ConfigPaths:    configPaths,
-		DB:         db,
-		Providers:  p,
-		Connectors: conns,
-		// MachineConfigs: conf.Machines,
+		DB:             db,
+		Providers:      p,
+		Connectors:     conns,
+		MachineConfigs: conf.Machines,
 		// CommandConfigs: conf.Commands,
 	}
 	return embed.New(eConf)

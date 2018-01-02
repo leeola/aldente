@@ -1,12 +1,12 @@
 [[architecture]]
 machine = "examples"
-connection = "local"
 workdir = "./_examples"
 
 
 [[machine]]
 name = "examples"
 group = "default"
+connection = "local"
 
 
 [marshalDatabase]

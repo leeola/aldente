@@ -7,9 +7,10 @@ import (
 )
 
 type Config struct {
-	DB         motley.Database
-	Connectors []motley.Connector
-	Providers  []motley.Provider
+	DB             motley.Database
+	Connectors     []motley.Connector
+	Providers      []motley.Provider
+	MachineConfigs []motley.MachineConfig
 }
 
 type Motley struct {

@@ -1,5 +1,7 @@
 package motley
 
+import "encoding/json"
+
 type ProvisionState int
 
 const (
@@ -61,9 +63,9 @@ type Provider interface {
 }
 
 type CreateOutput struct {
-	Line           string
-	ProviderRecord ProviderRecord
-	Error          error
+	Line             string
+	ConnectionRecord json.RawMessage
+	Error            error
 }
 
 type ProvisionOutput struct {
