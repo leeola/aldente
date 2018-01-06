@@ -2,6 +2,7 @@ package embed
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/leeola/motley"
 )
@@ -48,12 +49,23 @@ func New(c Config) (*Motley, error) {
 		connectorsMap[n] = p
 	}
 
-	return &Motley{
+	mot := &Motley{
 		config:     c,
 		db:         c.DB,
 		providers:  providersMap,
 		connectors: connectorsMap,
-	}, nil
+	}
+
+	if err := mot.init(); err != nil {
+		return nil, fmt.Errorf("failed to initialize: %s", err)
+	}
+
+	return mot, nil
+}
+
+func (m *Motley) init() error {
+	// TODO(leeola): upsert all of the machine configs
+	return nil
 }
 
 func (m *Motley) Status(string) error {
