@@ -8,9 +8,12 @@ import (
 )
 
 type Config struct {
-	DB             motley.Database
-	Connectors     []motley.Connector
-	Providers      []motley.Provider
+	DB         motley.Database
+	Connectors []motley.Connector
+	Providers  []motley.Provider
+
+	ArchitectureConfigs []motley.ArchitectureConfig
+
 	MachineConfigs []motley.MachineConfig
 }
 
@@ -20,6 +23,9 @@ type Motley struct {
 
 	providers  map[string]motley.Provider
 	connectors map[string]motley.Connector
+
+	archConfigs    map[string]motley.ArchitectureConfig
+	machineConfigs map[string]motley.MachineConfig
 }
 
 func New(c Config) (*Motley, error) {
@@ -49,11 +55,31 @@ func New(c Config) (*Motley, error) {
 		connectorsMap[n] = p
 	}
 
+	archConfigs := map[string]motley.ArchitectureConfig{}
+	for _, ac := range c.ArchitectureConfigs {
+		if _, exists := archConfigs[ac.Machine]; exists {
+			return nil, errors.New("duplicate architecture name configured")
+		}
+
+		archConfigs[ac.Machine] = ac
+	}
+
+	machineConfigs := map[string]motley.MachineConfig{}
+	for _, mc := range c.MachineConfigs {
+		if _, exists := machineConfigs[mc.Name]; exists {
+			return nil, errors.New("duplicate machine name configured")
+		}
+
+		machineConfigs[mc.Name] = mc
+	}
+
 	mot := &Motley{
-		config:     c,
-		db:         c.DB,
-		providers:  providersMap,
-		connectors: connectorsMap,
+		config:         c,
+		db:             c.DB,
+		providers:      providersMap,
+		connectors:     connectorsMap,
+		archConfigs:    archConfigs,
+		machineConfigs: machineConfigs,
 	}
 
 	if err := mot.init(); err != nil {
