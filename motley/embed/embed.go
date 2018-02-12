@@ -94,6 +94,6 @@ func (m *Motley) init() error {
 	return nil
 }
 
-func (m *Motley) Status(string) error {
-	return nil
+func (m *Motley) Status(groupName string) (motley.Status, error) {
+	return motley.Status{}, nil
 }

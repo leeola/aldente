@@ -6,8 +6,14 @@ import (
 )
 
 func StatusCmd(ctx *cli.Context) error {
-	_, err := autoload.Motley(ctx.GlobalStringSlice("config"))
+	groupName := ctx.Args().First()
+
+	m, err := autoload.Motley(ctx.GlobalStringSlice("config"))
 	if err != nil {
+		return err
+	}
+
+	if _, err := m.Status(groupName); err != nil {
 		return err
 	}
 
